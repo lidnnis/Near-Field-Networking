@@ -1,10 +1,8 @@
 Near-Field-Networking
-<<<<<<< HEAD
 =====================
 
 Please use the dev branch for development
 -----------------------------------------
-
 
 Created by
 - Dennis
@@ -12,7 +10,3 @@ Created by
 - Jamie
 - Calvin
 - Vince
-
-=======
-=====================
->>>>>>> 55fcfa2... Initial commit

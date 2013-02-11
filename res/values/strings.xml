@@ -13,7 +13,5 @@
         the system Settings (select the setting icon above), then place this device up
         against another Android device that supports Android Beam to send a
         message.</string>
-    <string name="title_activity_nfc">NFCActivity</string>
-    <string name="title_activity_beam">Beam</string>
-
+    <string name="title_activity_nfc">NFC Beam</string>
 </resources>

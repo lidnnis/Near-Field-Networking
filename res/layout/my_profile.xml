@@ -1,0 +1,143 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity" >
+
+    <EditText
+        android:id="@+id/editText3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_below="@+id/textView1"
+        android:ems="10"
+        android:inputType="phone" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/editText2"
+        android:layout_marginLeft="28dp"
+        android:text="Phone Number" />
+
+    <TextView
+        android:id="@+id/TextView02"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/editText2"
+        android:layout_below="@+id/imageButton1"
+        android:text="Email Address" />
+
+    <EditText
+        android:id="@+id/editText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/editText3"
+        android:layout_below="@+id/TextView02"
+        android:ems="10"
+        android:inputType="textPostalAddress" />
+
+    <EditText
+        android:id="@+id/editText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/TextView02"
+        android:layout_toRightOf="@+id/imageButton1"
+        android:ems="10"
+        android:inputType="textPersonName" />
+
+    <TextView
+        android:id="@+id/TextView01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/editText1"
+        android:layout_alignLeft="@+id/editText1"
+        android:text="Name" />
+
+    <ImageButton
+        android:id="@+id/imageButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/TextView02"
+        android:layout_below="@+id/textView2"
+        android:src="@drawable/ic_launcher" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/imageButton1"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="24dp"
+        android:text="My Profile"
+        android:textSize="20sp" />
+
+    <Button
+        android:id="@+id/button2"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/editText3"
+        android:layout_alignRight="@+id/editText1"
+        android:text="Save" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/editText3"
+        android:layout_below="@+id/editText3"
+        android:layout_marginTop="20dp"
+        android:text="Resume"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView4"
+        android:layout_below="@+id/textView4"
+        android:layout_toLeftOf="@+id/button2"
+        android:orientation="vertical" >
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/linearLayout1"
+        android:layout_below="@+id/linearLayout1"
+        android:text="+" />
+
+    <TextView
+        android:id="@+id/TextView03"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/button1"
+        android:layout_below="@+id/button1"
+        android:layout_marginTop="22dp"
+        android:text="Portfolio"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/TextView03"
+        android:layout_alignRight="@+id/editText3"
+        android:layout_below="@+id/TextView03"
+        android:orientation="vertical" >
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/Button01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/linearLayout2"
+        android:layout_below="@+id/linearLayout2"
+        android:text="+" />
+
+
+</RelativeLayout>

@@ -1,6 +1,9 @@
 package com.example.nearfieldnetworking;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 
 
 
@@ -12,11 +15,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
 	//private variables
 	static final String main_dir =  Environment.getExternalStorageDirectory() + "/near_field_networking";
+	static final String my_profile_path = main_dir + "/my_profile";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -29,13 +34,37 @@ public class MainActivity extends Activity {
 	    if(!main_public_dir.exists()){
 	    	main_public_dir.mkdir();
 	    }
+	    Toast.makeText(getApplicationContext(), "On Create", Toast.LENGTH_SHORT).show();
+	    //create my_profile directory if does not exist
+	    File my_profile_dir = new File(my_profile_path);
+	    if(!my_profile_dir.exists()){
+	    	my_profile_dir.mkdir();
+	    }
+	    
+	    //create my profile's person object if does not exist
+	    Person user = new Person("Your Name");
+    	File person_file = new File(my_profile_path + "/person");
+	    if(!person_file.exists()){
+			try {
+				FileOutputStream fout = new FileOutputStream(person_file);
+				ObjectOutputStream oout = new ObjectOutputStream(fout);
+		    	oout.writeObject(user);
+		    	oout.flush();
+		    	oout.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+	    }
 	       
 	    //listen for my profile button click
 	    Button options = (Button) findViewById(R.id.button1);
 	    options.setOnClickListener(new View.OnClickListener() {
 	    	public void onClick(View v) {
-	    		Intent intent = new Intent(getBaseContext(), MyProfile.class);
-	           	intent.putExtra("main_dir",main_dir);
+	    		Intent intent = new Intent(getBaseContext(), DisplayPersonActivity.class);
+	           	intent.putExtra("person_directory",my_profile_path);
+	           	intent.putExtra("editable", true);
 	           	startActivity(intent);  
 	    	}
 	    });

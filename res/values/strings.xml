@@ -14,5 +14,8 @@
         against another Android device that supports Android Beam to send a
         message.</string>
     <string name="title_activity_nfc">NFC Beam</string>
-    <string name="my_profile_button"  >My Profile</string>
+    <string name="dialog_client">Waiting on Data</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="my_profile_button">My Profile</string>
+
 </resources>

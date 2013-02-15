@@ -1,19 +1,15 @@
 package com.example.nearfieldnetworking;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import android.app.ActionBar;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.nfc.NfcAdapter.CreateBeamUrisCallback;
 import android.nfc.NfcAdapter.CreateNdefMessageCallback;
 import android.nfc.NfcAdapter.OnNdefPushCompleteCallback;
 import android.nfc.NfcEvent;
@@ -21,9 +17,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
-import android.provider.MediaStore.Images.ImageColumns;
 import android.provider.Settings;
-import android.text.format.Time;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,17 +28,31 @@ import android.widget.Toast;
 
 //, CreateBeamUrisCallback
 
-public class NFCActivity extends Activity implements CreateNdefMessageCallback,
-		OnNdefPushCompleteCallback {
-	NfcAdapter mNfcAdapter;
-	BluetoothAdapter mBluetoothAdapter;
+public class NFCActivity extends FragmentActivity implements
+		CreateNdefMessageCallback, OnNdefPushCompleteCallback {
+	private NfcAdapter mNfcAdapter;
+	private BluetoothAdapter mBluetoothAdapter;
+	private NFCService mNFCService = null;
+	private BluetoothDevice bt;
+
+	private Uri[] filesToSend;
+	private DialogFragment newFragment;
 	TextView mInfoText;
-	private static final int MESSAGE_SENT = 1;
-	private static final int REQUEST_ENABLE_BT = 2;
-	private static final int PHOTO_INTENT = 3;
+
+	public static final int MESSAGE_STATE_CHANGE = 1;
+	public static final int MESSAGE_READ = 2;
+	public static final int MESSAGE_SENT = 3;
+	public static final int REQUEST_ENABLE_BT = 4;
+	public static final int PHOTO_INTENT = 5;
+	public static final int MESSAGE_TOAST = 6;
+	public static final String TOAST = "toast";
+
+	public static final int MESSAGE_DEVICE_NAME = 6;
+	public static final String DEVICE_NAME = "device_name";
+
 	public static final String PREFS_NAME = "NFCPrefsFile";
 
-	private String filePath;
+	// private String filePath;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,58 +65,49 @@ public class NFCActivity extends Activity implements CreateNdefMessageCallback,
 		mInfoText = (TextView) findViewById(R.id.textView);
 		// Check for available NFC Adapter
 		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
 		if (mNfcAdapter == null) {
 			mInfoText = (TextView) findViewById(R.id.textView);
 			mInfoText.setText("NFC is not available on this device.");
 		} else {
 			// Register callback to set NDEF message
-			// mNfcAdapter.setNdefPushMessageCallback(this, this);
+			mNfcAdapter.setNdefPushMessageCallback(this, this);
 			// Register callback to listen for message-sent success
 			mNfcAdapter.setOnNdefPushCompleteCallback(this, this);
 
 			// mNfcAdapter.setBeamPushUris(new Uri[] {uri1, uri2}, this);
-			//mNfcAdapter.setBeamPushUrisCallback(this, this);
+			// mNfcAdapter.setBeamPushUrisCallback(this, this);
 		}
-
-		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		if (mBluetoothAdapter == null) {
-			// Device does not support Bluetooth
-		}
-
-		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-		filePath = settings.getString("filePath", "");
-		
-		Log.d("debug",filePath);
 
 	}
 
-//	@Override
-//	public Uri[] createBeamUris(NfcEvent event) {
-//
-//		ArrayList<Uri> uris = new ArrayList<Uri>();
-//		
-//		uris.add(Uri.fromFile(new File(filePath)));
-//		
-//		Log.d("debug",uris.get(0).toString());
-//		
-//		
-//		Uri[] ret = new Uri[uris.size()];
-//		uris.toArray(ret);
-//		
-//		return ret;
-//	}
+	@Override
+	public void onStart() {
+		super.onStart();
+		// if(D) Log.e(TAG, "++ ON START ++");
+		// If BT is not on, request that it be enabled.
+		// setupChat() will then be called during onActivityResult
+		if (!mBluetoothAdapter.isEnabled()) {
+			Intent enableIntent = new Intent(
+					BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+			// Otherwise, setup the chat session
+		} else {
+			if (mNFCService == null)
+				mNFCService = new NFCService(this, mFileHandler);
+		}
+	}
 
 	/**
 	 * Implementation for the CreateNdefMessageCallback interface
 	 */
 	@Override
 	public NdefMessage createNdefMessage(NfcEvent event) {
-		Time time = new Time();
-		time.setToNow();
-		String text = ("Beam me up!\n\n" + "Beam Time: " + time
-				.format("%H:%M:%S"));
+		String macAddr = mBluetoothAdapter.getAddress();
 		NdefMessage msg = new NdefMessage(NdefRecord.createMime(
-				"application/com.example.nearfieldnetworking", text.getBytes())
+				"application/com.example.nearfieldnetworking",
+				macAddr.getBytes())
 		/**
 		 * The Android Application Record (AAR) is commented out. When a device
 		 * receives a push with an AAR in it, the application specified in the
@@ -135,9 +136,44 @@ public class NFCActivity extends Activity implements CreateNdefMessageCallback,
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
+			case MESSAGE_STATE_CHANGE:
+				switch (msg.arg1) {
+				case NFCService.STATE_CONNECTED:
+					// setStatus(getString(R.string.title_connected_to,
+					// mConnectedDeviceName));
+					break;
+				case NFCService.STATE_CONNECTING:
+					// setStatus(R.string.title_connecting);
+					break;
+				case NFCService.STATE_LISTEN:
+				case NFCService.STATE_NONE:
+					// setStatus(R.string.title_not_connected);
+					break;
+				}
+				break;
 			case MESSAGE_SENT:
-				Toast.makeText(getApplicationContext(), "Message sent!",
+				// Toast.makeText(getApplicationContext(), "Pairing Initiated",
+				// Toast.LENGTH_LONG).show();
+				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+				intent.setType("*/*");
+				startActivityForResult(intent, PHOTO_INTENT);
+				break;
+			}
+		}
+	};
+
+	private final Handler mFileHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MESSAGE_READ:
+				byte[] readBuf = (byte[]) msg.obj;
+				// construct a string from the valid bytes in the buffer
+				String readMessage = new String(readBuf, 0, msg.arg1);
+				Toast.makeText(getApplicationContext(), readMessage,
 						Toast.LENGTH_LONG).show();
+
+				newFragment.getDialog().cancel();
 				break;
 			}
 		}
@@ -146,6 +182,16 @@ public class NFCActivity extends Activity implements CreateNdefMessageCallback,
 	@Override
 	public void onResume() {
 		super.onResume();
+
+		if (mNFCService != null) {
+			// Only if the state is STATE_NONE, do we know that we haven't
+			// started already
+			if (mNFCService.getState() == NFCService.STATE_NONE) {
+				// Start the Bluetooth chat services
+				mNFCService.start();
+			}
+		}
+
 		// Check to see that the Activity started due to an Android Beam
 		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
 			processIntent(getIntent());
@@ -167,8 +213,35 @@ public class NFCActivity extends Activity implements CreateNdefMessageCallback,
 		// only one message sent during the beam
 		NdefMessage msg = (NdefMessage) rawMsgs[0];
 		// record 0 contains the MIME type, record 1 is the AAR, if present
-		//mInfoText.setText(new String(msg.getRecords()[0].getPayload()));
-		mInfoText.setText(new String("Transfer Complete"));
+		String macAddr = new String(msg.getRecords()[0].getPayload());
+		// mInfoText.setText(macAddr);
+
+		// Pair BT Devices
+
+		if (!mBluetoothAdapter.getBondedDevices().isEmpty())
+			bt = mBluetoothAdapter.getRemoteDevice(macAddr);
+		// mInfoText.setText(new String("Transfer Complete"));
+		// AcceptThread at = new AcceptThread();
+		// at.run();
+		mNFCService.connect(bt);
+
+		newFragment = new ClientDialog();
+
+		newFragment.show(getSupportFragmentManager(), "ClientDialog");
+		getSupportFragmentManager().executePendingTransactions();
+
+		newFragment.getDialog().setOnCancelListener(new OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface dialog) {
+				// TODO Auto-generated method stub
+
+				mNFCService.stop();
+				Toast.makeText(getApplicationContext(),
+						"Connection Terminated", Toast.LENGTH_LONG).show();
+
+			}
+		});
+
 	}
 
 	@Override
@@ -208,47 +281,14 @@ public class NFCActivity extends Activity implements CreateNdefMessageCallback,
 	protected void onActivityResult(int requestCode, int resultCode,
 			Intent intent) {
 		super.onActivityResult(requestCode, resultCode, intent);
-		if (requestCode == PHOTO_INTENT && resultCode==RESULT_OK) {
-			
-			mNfcAdapter.setBeamPushUris(new Uri[] {intent.getData()}, this);
-			
-			
-			
-//			if (intent != null) {
-//				// Log.d(LOG_TAG, "idButSelPic Photopicker: " +
-//				// intent.getDataString());
-//				Cursor cursor = getContentResolver().query(intent.getData(),
-//						null, null, null, null);
-//				cursor.moveToFirst(); // if not doing this, 01-22 19:17:04.564:
-//										// ERROR/AndroidRuntime(26264): Caused
-//										// by:
-//										// android.database.CursorIndexOutOfBoundsException:
-//										// Index -1 requested, with a size of 1
-//				int idx = cursor.getColumnIndex(ImageColumns.DATA);
-//				String fileSrc = cursor.getString(idx);
-//				// Log.d(LOG_TAG, "Picture:" + fileSrc);
-//				// m_Tv.setText("Image selected:"+fileSrc);
-//				Toast.makeText(getApplicationContext(), fileSrc,
-//						Toast.LENGTH_LONG).show();
-//
-//				SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-//				SharedPreferences.Editor editor = settings.edit();
-//				editor.putString("filePath", fileSrc);
-//
-//				// Commit the edits!
-//				editor.commit();
-//
-//				// Bitmap bitmapPreview = BitmapFactory.decodeFile(fileSrc);
-//				// //load preview image
-//				// BitmapDrawable bmpDrawable = new
-//				// BitmapDrawable(bitmapPreview);
-//				// m_Image.setBackgroundDrawable(bmpDrawable);
-//			} else {
-//				// Log.d(LOG_TAG, "idButSelPic Photopicker canceled");
-//				// m_Tv.setText("Image selection canceled!");
-//				Toast.makeText(getApplicationContext(),
-//						"Image selection canceled!", Toast.LENGTH_LONG).show();
-//			}
+		if (requestCode == PHOTO_INTENT && resultCode == RESULT_OK) {
+
+			filesToSend = new Uri[] { intent.getData() };
+			Toast.makeText(getApplicationContext(), filesToSend[0].getPath(),
+					Toast.LENGTH_LONG).show();
+
+			mNFCService.writeToFile(filesToSend[0].getPath().getBytes());
+
 		}
 	}
 

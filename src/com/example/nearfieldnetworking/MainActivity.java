@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
 	    if(!main_public_dir.exists()){
 	    	main_public_dir.mkdir();
 	    }
-	    Toast.makeText(getApplicationContext(), "On Create", Toast.LENGTH_SHORT).show();
+	    //Toast.makeText(getApplicationContext(), "On Create", Toast.LENGTH_SHORT).show();
 	    //create my_profile directory if does not exist
 	    File my_profile_dir = new File(my_profile_path);
 	    if(!my_profile_dir.exists()){

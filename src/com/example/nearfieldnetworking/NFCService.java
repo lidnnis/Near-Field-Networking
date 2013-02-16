@@ -188,14 +188,25 @@ public class NFCService {
 
 
 	public void writeToFile(byte[] bytes) {
-		if (mConnectedThread != null)
-			mConnectedThread.write(bytes);
+		// Create temporary object
+        ConnectedThread r;
+        // Synchronize a copy of the ConnectedThread
+        synchronized (this) {
+            if (mState != STATE_CONNECTED) return;
+            r = mConnectedThread;
+        }
+        // Perform the write unsynchronized
+        r.write(bytes);
+        
+        Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_DONE);
+        Bundle bundle = new Bundle();
+        bundle.putString(NFCActivity.TOAST, "File Transfer Completed");
+        msg.setData(bundle);
+        mFileHandler.sendMessage(msg);
+        
+		//NFCService.this.stop();
 	}
 
-	private void manageConnectedSocket(BluetoothSocket socket) {
-		mConnectedThread = new ConnectedThread(socket);
-		mConnectedThread.run();
-	}
 
 	private synchronized void setState(int state) {
 		mState = state;
@@ -379,7 +390,6 @@ public class NFCService {
 		public void write(byte[] bytes) {
 			try {
 				mmOutStream.write(bytes);
-				NFCService.this.stop();
 			} catch (IOException e) {
 			}
 		}

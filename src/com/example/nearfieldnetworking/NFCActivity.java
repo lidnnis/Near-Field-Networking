@@ -39,16 +39,22 @@ public class NFCActivity extends FragmentActivity implements
 	private DialogFragment newFragment;
 	TextView mInfoText;
 
+	public static final int REQUEST_ENABLE_BT = 1;
+	public static final int REQUEST_FILE = 2;
+
+	// Message types sent from the BluetoothChatService Handler
 	public static final int MESSAGE_STATE_CHANGE = 1;
 	public static final int MESSAGE_READ = 2;
-	public static final int MESSAGE_SENT = 3;
-	public static final int REQUEST_ENABLE_BT = 4;
-	public static final int PHOTO_INTENT = 5;
-	public static final int MESSAGE_TOAST = 6;
-	public static final String TOAST = "toast";
+	public static final int MESSAGE_WRITE = 3;
+	public static final int MESSAGE_DEVICE_NAME = 4;
+	public static final int MESSAGE_TOAST = 5;
+	public static final int MESSAGE_DONE = 6;
 
-	public static final int MESSAGE_DEVICE_NAME = 6;
+	public static final int MESSAGE_SENT = 7;
+
+	// Key names received from the BluetoothChatService Handler
 	public static final String DEVICE_NAME = "device_name";
+	public static final String TOAST = "toast";
 
 	public static final String PREFS_NAME = "NFCPrefsFile";
 
@@ -136,6 +142,23 @@ public class NFCActivity extends FragmentActivity implements
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
+
+			case MESSAGE_SENT:
+				// Toast.makeText(getApplicationContext(), "Pairing Initiated",
+				// Toast.LENGTH_LONG).show();
+				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+				intent.setType("*/*");
+				startActivityForResult(intent, REQUEST_FILE);
+				break;
+			}
+		}
+	};
+
+	private final Handler mFileHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+
 			case MESSAGE_STATE_CHANGE:
 				switch (msg.arg1) {
 				case NFCService.STATE_CONNECTED:
@@ -151,21 +174,7 @@ public class NFCActivity extends FragmentActivity implements
 					break;
 				}
 				break;
-			case MESSAGE_SENT:
-				// Toast.makeText(getApplicationContext(), "Pairing Initiated",
-				// Toast.LENGTH_LONG).show();
-				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-				intent.setType("*/*");
-				startActivityForResult(intent, PHOTO_INTENT);
-				break;
-			}
-		}
-	};
 
-	private final Handler mFileHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
 			case MESSAGE_READ:
 				byte[] readBuf = (byte[]) msg.obj;
 				// construct a string from the valid bytes in the buffer
@@ -173,7 +182,18 @@ public class NFCActivity extends FragmentActivity implements
 				Toast.makeText(getApplicationContext(), readMessage,
 						Toast.LENGTH_LONG).show();
 
-				newFragment.getDialog().cancel();
+				if (newFragment.getDialog().isShowing()) {
+					newFragment.getDialog().cancel();
+				}
+				mNFCService.stop();
+				finish();
+				break;
+			case MESSAGE_DONE:
+				Toast.makeText(getApplicationContext(),
+						msg.getData().getString(TOAST), Toast.LENGTH_SHORT)
+						.show();
+				mNFCService.stop();
+				finish();
 				break;
 			}
 		}
@@ -235,9 +255,10 @@ public class NFCActivity extends FragmentActivity implements
 			public void onCancel(DialogInterface dialog) {
 				// TODO Auto-generated method stub
 
-				mNFCService.stop();
-				Toast.makeText(getApplicationContext(),
-						"Connection Terminated", Toast.LENGTH_LONG).show();
+				// mNFCService.stop();
+				// Toast.makeText(getApplicationContext(),
+				// "Connection Terminated", Toast.LENGTH_LONG).show();
+				// finish();
 
 			}
 		});
@@ -265,7 +286,7 @@ public class NFCActivity extends FragmentActivity implements
 		case R.id.menu_nfc_settings:
 			intent = new Intent(Intent.ACTION_GET_CONTENT);
 			intent.setType("*/*");
-			startActivityForResult(intent, PHOTO_INTENT);
+			startActivityForResult(intent, REQUEST_FILE);
 			return true;
 		case android.R.id.home:
 			// app icon in action bar clicked; go home
@@ -281,13 +302,20 @@ public class NFCActivity extends FragmentActivity implements
 	protected void onActivityResult(int requestCode, int resultCode,
 			Intent intent) {
 		super.onActivityResult(requestCode, resultCode, intent);
-		if (requestCode == PHOTO_INTENT && resultCode == RESULT_OK) {
+		if (requestCode == REQUEST_FILE) {
 
-			filesToSend = new Uri[] { intent.getData() };
-			Toast.makeText(getApplicationContext(), filesToSend[0].getPath(),
-					Toast.LENGTH_LONG).show();
+			if (resultCode == RESULT_OK) {
+				filesToSend = new Uri[] { intent.getData() };
+				Toast.makeText(getApplicationContext(),
+						filesToSend[0].getPath(), Toast.LENGTH_LONG).show();
 
-			mNFCService.writeToFile(filesToSend[0].getPath().getBytes());
+				mNFCService.writeToFile(filesToSend[0].getPath().getBytes());
+			} else {
+				// mNFCService.stop();
+				// Toast.makeText(getApplicationContext(),
+				// "Connection Terminated", Toast.LENGTH_LONG).show();
+				// finish();
+			}
 
 		}
 	}

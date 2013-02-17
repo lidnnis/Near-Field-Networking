@@ -1,6 +1,5 @@
 package com.example.nearfieldnetworking;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,7 +10,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -25,7 +23,6 @@ public class NFCService {
 	private ConnectThread mConnectThread;
 	private ConnectedThread mConnectedThread;
 	private int mState;
-	private String currentFilename;
 
 	// Constants that indicate the current connection state
 	public static final int STATE_NONE = 0; // we're doing nothing
@@ -388,7 +385,11 @@ public class NFCService {
 					System.arraycopy(buffer,0,fileBuffer,pos,bytes);
 					pos += bytes;
 					
-					//Array.Copy(sourceArray , truncArray , truncArray.Length);
+					
+					//int index = (pos < 1024) ? (1024):(pos);
+					
+					//byte[] sendBuffer = new byte[pos];
+					//System.arraycopy(fileBuffer,0, sendBuffer,0, pos);
 					// Send the obtained bytes to the UI activity
 					mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, pos, -1, fileBuffer)
 							.sendToTarget();

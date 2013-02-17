@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 
 import android.app.ActionBar;
 import android.bluetooth.BluetoothAdapter;
@@ -311,14 +310,16 @@ public class NFCActivity extends FragmentActivity implements
 				byte[] headerBuf = new byte[1024]; 
 				System.arraycopy(readBuf,0,headerBuf,0,1024);
 				
+				Log.d("wtf",Integer.toString(msg.arg1));
+				
 //				Toast.makeText(getApplicationContext(),
 //						new String(headerBuf), Toast.LENGTH_SHORT)
 //						.show();
 				
-				byte[] fileBuf = new byte[readBuf.length-1024]; 
+				byte[] fileBuf = new byte[msg.arg1]; 
 				
 				
-				System.arraycopy(readBuf,1024,fileBuf,0,readBuf.length-1024);
+				System.arraycopy(readBuf,1024,fileBuf,0,msg.arg1);
 				
 				File path = Environment.getExternalStorageDirectory();
 				File file = new File(path + "/NFN", new String(headerBuf).trim());
@@ -389,6 +390,7 @@ public class NFCActivity extends FragmentActivity implements
 		int len = 0;
 		while ((len = inputStream.read(buffer)) != -1) {
 			byteBuffer.write(buffer, 0, len);
+			byteBuffer.flush();
 		}
 
 		// and then we can return your byte array.

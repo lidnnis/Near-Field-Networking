@@ -1,5 +1,6 @@
 package com.example.nearfieldnetworking;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,6 +11,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -23,6 +25,7 @@ public class NFCService {
 	private ConnectThread mConnectThread;
 	private ConnectedThread mConnectedThread;
 	private int mState;
+	private String currentFilename;
 
 	// Constants that indicate the current connection state
 	public static final int STATE_NONE = 0; // we're doing nothing
@@ -198,14 +201,16 @@ public class NFCService {
         // Perform the write unsynchronized
         r.write(bytes);
         
-        Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_DONE);
-        Bundle bundle = new Bundle();
-        bundle.putString(NFCActivity.TOAST, "File Transfer Completed");
-        msg.setData(bundle);
-        mFileHandler.sendMessage(msg);
+//        Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_DONE);
+//        Bundle bundle = new Bundle();
+//        bundle.putString(NFCActivity.TOAST, "File Transfer Completed");
+//        msg.setData(bundle);
+//        mFileHandler.sendMessage(msg);
         
 		//NFCService.this.stop();
 	}
+	
+
 
 
 	private synchronized void setState(int state) {
@@ -369,16 +374,23 @@ public class NFCService {
 		}
 
 		public void run() {
-			byte[] buffer = new byte[1024]; // buffer store for the stream
+			byte[] buffer = new byte[1024];
+			byte[] fileBuffer = new byte[1024*1024]; // buffer store for the stream
 			int bytes; // bytes returned from read()
-
+			int pos = 0;
+			
+			
 			// Keep listening to the InputStream until an exception occurs
 			while (true) {
 				try {
 					// Read from the InputStream
 					bytes = mmInStream.read(buffer);
+					System.arraycopy(buffer,0,fileBuffer,pos,bytes);
+					pos += bytes;
+					
+					//Array.Copy(sourceArray , truncArray , truncArray.Length);
 					// Send the obtained bytes to the UI activity
-					mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, bytes, -1, buffer)
+					mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, pos, -1, fileBuffer)
 							.sendToTarget();
 				} catch (IOException e) {
 					break;

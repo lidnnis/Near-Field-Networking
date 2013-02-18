@@ -17,5 +17,7 @@
     <string name="dialog_client">Waiting on Data</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="my_profile_button">My Profile</string>
+    <string name="others_button">People</string>
+    <string name="list_people">People</string>
 
 </resources>

@@ -22,6 +22,7 @@ public class MainActivity extends Activity {
 	//private variables
 	static final String main_dir =  Environment.getExternalStorageDirectory() + "/near_field_networking";
 	static final String my_profile_path = main_dir + "/my_profile";
+	static final String people_path = main_dir + "/peole";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -34,16 +35,22 @@ public class MainActivity extends Activity {
 	    if(!main_public_dir.exists()){
 	    	main_public_dir.mkdir();
 	    }
-	    //Toast.makeText(getApplicationContext(), "On Create", Toast.LENGTH_SHORT).show();
+
 	    //create my_profile directory if does not exist
 	    File my_profile_dir = new File(my_profile_path);
 	    if(!my_profile_dir.exists()){
 	    	my_profile_dir.mkdir();
 	    }
+
+	  //create people directory if does not exist
+	    File people_dir = new File(people_path);
+	    if(!people_dir.exists()){
+	    	people_dir.mkdir();
+	    }
 	    
 	    //create my profile's person object if does not exist
 	    Person user = new Person("Your Name");
-    	File person_file = new File(my_profile_path + "/person");
+    	File person_file = new File(my_profile_path + "/.person");
 	    if(!person_file.exists()){
 			try {
 				FileOutputStream fout = new FileOutputStream(person_file);
@@ -59,12 +66,22 @@ public class MainActivity extends Activity {
 	    }
 	       
 	    //listen for my profile button click
-	    Button options = (Button) findViewById(R.id.button1);
-	    options.setOnClickListener(new View.OnClickListener() {
+	    Button my_profile_button = (Button) findViewById(R.id.button1);
+	    my_profile_button.setOnClickListener(new View.OnClickListener() {
 	    	public void onClick(View v) {
 	    		Intent intent = new Intent(getBaseContext(), DisplayPersonActivity.class);
 	           	intent.putExtra("person_directory",my_profile_path);
 	           	intent.putExtra("editable", true);
+	           	startActivity(intent);  
+	    	}
+	    });
+	    
+	  //listen for people button click
+	    Button people_button = (Button) findViewById(R.id.button2);
+	    people_button.setOnClickListener(new View.OnClickListener() {
+	    	public void onClick(View v) {
+	    		Intent intent = new Intent(getBaseContext(), DisplayPeopleActivity.class);
+	           	intent.putExtra("people_directory",people_path);
 	           	startActivity(intent);  
 	    	}
 	    });

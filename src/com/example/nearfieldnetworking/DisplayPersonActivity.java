@@ -43,7 +43,7 @@ public class DisplayPersonActivity extends Activity {
     	}
 		
 		//open person's object file
-		File person_file = new File(person_directory + "/person");
+		File person_file = new File(person_directory + "/.person");
 		if(!person_file.exists()){
 			Toast.makeText(getApplicationContext(), "No person file", Toast.LENGTH_SHORT).show();
 			finish();
@@ -63,7 +63,7 @@ public class DisplayPersonActivity extends Activity {
 		TextView name_text = (TextView) findViewById(R.id.textView2);
 		name_text.setText(person.getName());
 		
-		TextView email_text = (TextView) findViewById(R.id.TextView02);
+		TextView email_text = (TextView) findViewById(R.id.TextView1);
 		email_text.setText(person.getEmailAddress());
 		
 		TextView phone_text = (TextView) findViewById(R.id.TextView03);

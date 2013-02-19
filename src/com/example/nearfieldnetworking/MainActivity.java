@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
 	//private variables
 	static final String main_dir =  Environment.getExternalStorageDirectory() + "/near_field_networking";
 	static final String my_profile_path = main_dir + "/my_profile";
-	static final String people_path = main_dir + "/peole";
+	static final String people_path = main_dir + "/people";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +40,10 @@ public class MainActivity extends Activity {
 	    File my_profile_dir = new File(my_profile_path);
 	    if(!my_profile_dir.exists()){
 	    	my_profile_dir.mkdir();
+	    	File resume_dir = new File(my_profile_path + "/Resume");
+	    	resume_dir.mkdir();
+	    	File portfolio_dir = new File(my_profile_path + "/Profile");
+	    	portfolio_dir.mkdir();
 	    }
 
 	  //create people directory if does not exist
@@ -52,17 +56,7 @@ public class MainActivity extends Activity {
 	    Person user = new Person("Your Name");
     	File person_file = new File(my_profile_path + "/.person");
 	    if(!person_file.exists()){
-			try {
-				FileOutputStream fout = new FileOutputStream(person_file);
-				ObjectOutputStream oout = new ObjectOutputStream(fout);
-		    	oout.writeObject(user);
-		    	oout.flush();
-		    	oout.close();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+			user.writeToFile(person_file);
 	    }
 	       
 	    //listen for my profile button click

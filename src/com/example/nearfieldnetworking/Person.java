@@ -1,5 +1,8 @@
 package com.example.nearfieldnetworking;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 
@@ -17,6 +20,12 @@ public class Person implements Serializable {
 	//constructor
 	Person(String name){
 		this.name = name;
+	}
+	
+	//set name
+	public boolean setName(String name){
+		this.name = name;
+		return true;
 	}
 	
 	//set email
@@ -46,5 +55,21 @@ public class Person implements Serializable {
 		return this.phone_number;
 	}
 	
+	//write to file
+	public boolean writeToFile(File person_file){
+		try {
+			FileOutputStream fout = new FileOutputStream(person_file);
+			ObjectOutputStream oout = new ObjectOutputStream(fout);
+	    	oout.writeObject(this);
+	    	oout.flush();
+	    	oout.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+		
+		return true;
+	}
 
 }

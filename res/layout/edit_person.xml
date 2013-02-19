@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
 
-    <TextView
+    <EditText
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -14,7 +14,7 @@
         android:text="Name"
         android:textSize="20sp" />
 
-    <TextView
+    <EditText
         android:id="@+id/TextView03"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -41,7 +41,7 @@
         android:layout_below="@+id/TextView1"
         android:text="Phone Number" />
 
-    <TextView
+    <EditText
         android:id="@+id/TextView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -77,6 +77,6 @@
         android:layout_height="wrap_content"
         android:layout_alignRight="@+id/TextView1"
         android:layout_alignTop="@+id/textView2"
-        android:text="@string/edit_button"/>
+        android:text="@string/save_button"/>
 
 </RelativeLayout>

@@ -3,6 +3,7 @@ package com.example.nearfieldnetworking;
 import java.io.File;
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -15,20 +16,32 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-////////////////////////////////////////////////////////////////////////////////
-//class FileExpandableClassAdapter
-////////////////////////////////////////////////////////////////////////////////
+/**************************************************************************************
+* class FileExpandableClassAdapter
+*	An adapter for displaying a list of lists of files associated with a person 
+* 
+**************************************************************************************/
 public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 
+		//private variables
 		private Context context;
 		private ArrayList<File> groups;
 		private ArrayList<ArrayList<File>> children;
+		private boolean addable;
 	
 		//constructor
-		FileExpandableListAdapter(Context context,ArrayList<File> groups,ArrayList<ArrayList<File>> children){
+		FileExpandableListAdapter(Context context,ArrayList<File> groups,ArrayList<ArrayList<File>> children,boolean addable){
 			this.context = context;
 			this.groups = groups;
 			this.children = children;
+			this.addable = addable;
+			
+			//if addable, add an extra object to click on to add a file
+			if (addable){
+				for(int i = 0; i < groups.size();i++){
+					children.get(i).add(new File(""));
+				}
+			}
 		}
 	
 		@Override
@@ -48,27 +61,49 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 				ViewGroup arg4) {
 			// TODO Auto-generated method stub
 			TextView t = new TextView(context);
-			t.setText((CharSequence) ((File) getChild(arg0,arg1)).getName());
 			t.setPadding(100, 0, 0, 0);
 			t.setTextSize(20);
-			t.setOnClickListener(new OnClickListener(){
-				@Override
-				public void onClick(View v) {
-					// TODO Auto-generated method stub
-					try
-					{
-					 Intent intentUrl = new Intent(Intent.ACTION_VIEW);
-					 intentUrl.setDataAndType(Uri.fromFile((File) getChild(arg0,arg1)), "application/pdf");
-					 intentUrl.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-					 context.startActivity(intentUrl);
+			
+			if(addable && arg1 == getChildrenCount(arg0)-1){
+				//add link to choose file
+				t.setText("Add File");
+				t.setOnClickListener(new OnClickListener(){
+					@Override
+					public void onClick(View v) {
+						// TODO Auto-generated method stub
+						try
+						{
+							Intent intent = new Intent(context, SelectFileActivity.class);
+			            	((Activity) context).startActivityForResult(intent,arg0);
+						}
+						catch (ActivityNotFoundException e)
+						{
+							Toast.makeText(context, "No PDF Viewer Installed", Toast.LENGTH_LONG).show();
+						}
 					}
-					catch (ActivityNotFoundException e)
-					{
-					 Toast.makeText(context, "No PDF Viewer Installed", Toast.LENGTH_LONG).show();
+				});
+				
+			}else{
+				//add file link
+				t.setText((CharSequence) ((File) getChild(arg0,arg1)).getName());
+				t.setOnClickListener(new OnClickListener(){
+					@Override
+					public void onClick(View v) {
+						// TODO Auto-generated method stub
+						try
+						{
+							Intent intentUrl = new Intent(Intent.ACTION_VIEW);
+							intentUrl.setDataAndType(Uri.fromFile((File) getChild(arg0,arg1)), "application/pdf");
+							intentUrl.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							context.startActivity(intentUrl);
+						}
+						catch (ActivityNotFoundException e)
+						{
+							Toast.makeText(context, "No PDF Viewer Installed", Toast.LENGTH_LONG).show();
+						}
 					}
-					
-				}
-			});
+				});
+			}
 			return t;
 		}
 

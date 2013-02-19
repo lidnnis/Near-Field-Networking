@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 
 
 import android.os.Bundle;
@@ -19,13 +20,15 @@ import android.app.Activity;
 import android.content.Intent;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class DisplayPersonActivity extends Activity {
 
-	private String person_directory = "";
+	private String person_path = "";
 	private boolean editable;
 	private Person person = new Person("");
 	
@@ -38,12 +41,19 @@ public class DisplayPersonActivity extends Activity {
         Bundle extras = getIntent().getExtras(); 
 		if(extras !=null)
     	{
-			person_directory = extras.getString("person_directory");
+			person_path = extras.getString("person_directory");
 			editable = extras.getBoolean("editable", false);
     	}
 		
+		//make sure person_directory exists
+		File person_dir = new File(person_path);
+		if(!person_dir.exists() || !person_dir.isDirectory()){
+			Toast.makeText(getApplicationContext(), "No person directory", Toast.LENGTH_SHORT).show();
+			finish();
+		}
+		
 		//open person's object file
-		File person_file = new File(person_directory + "/.person");
+		File person_file = new File(person_path + "/.person");
 		if(!person_file.exists()){
 			Toast.makeText(getApplicationContext(), "No person file", Toast.LENGTH_SHORT).show();
 			finish();
@@ -68,6 +78,44 @@ public class DisplayPersonActivity extends Activity {
 		
 		TextView phone_text = (TextView) findViewById(R.id.TextView03);
 		phone_text.setText(person.getPhoneNumber());
+		
+		
+		//expandable list view
+		ExpandableListView list_view = (ExpandableListView) findViewById(R.id.expandableListView1);
+        
+		//add all directories to categories
+		ArrayList<File> categories = new ArrayList<File>();
+		File[] files = person_dir.listFiles();
+		for(int i = 0; i < files.length;i++){
+			if(files[i].isDirectory()){
+				categories.add(files[i]);
+			}
+		}
+		
+		//add all subfiles to subcategories
+		ArrayList<ArrayList<File>> subcategories = new ArrayList<ArrayList<File>>();
+		for(int i = 0;i < categories.size();i++){
+			ArrayList<File> sub_list = new ArrayList<File>();
+			subcategories.add(sub_list);
+			File[] sub_files = categories.get(i).listFiles();
+			for(int j = 0; j  < sub_files.length;j++){
+				if(!sub_files[j].isDirectory()){
+					sub_list.add(sub_files[j]);
+				}
+			}
+		}
+ 		
+		
+		FileExpandableListAdapter adapter = new FileExpandableListAdapter(this, categories,subcategories);
+
+        // Set this blank adapter to the list view
+        list_view.setAdapter(adapter);
+        
+        //expand groups to start
+        for(int i = 0; i < adapter.getGroupCount();i++){
+        	list_view.expandGroup(i);
+        }
+		
         
     }
 

@@ -152,15 +152,7 @@ public class DisplayPeopleActivity extends ListActivity {
      
     		System.out.println(s);
      
-    		imageView.setImageResource(R.drawable.icon);
-    		
-    		//if folder
-    		/*if (s.endsWith("/")) {
-    			imageView.setImageResource(R.drawable.folder_orange_small);
-    		//if file
-    		} else {
-    			imageView.setImageResource(R.drawable.file_small);
-    		}*/
+    		imageView.setImageResource(R.drawable.file_small);
     		     
     		//return the view
     		return rowView;

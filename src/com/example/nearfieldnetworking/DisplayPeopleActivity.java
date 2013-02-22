@@ -9,6 +9,8 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.LayoutInflater;
@@ -105,7 +107,7 @@ public class DisplayPeopleActivity extends ListActivity {
     	//list files
     	//ArrayAdapter<String> fileList = new ArrayAdapter<String>(this, R.layout.row, item); 
     	//setListAdapter(fileList);
-    	setListAdapter(new FileArrayAdapter(this, item));
+    	setListAdapter(new FileArrayAdapter(this, item,path));
     }
 
 
@@ -127,12 +129,14 @@ public class DisplayPeopleActivity extends ListActivity {
     private class FileArrayAdapter extends ArrayAdapter<String> {
     	private final Context context;
     	private final List <String> values;
+    	private final List <String> paths;
      
-    	//initialize array adappter
-    	public FileArrayAdapter(Context context, List<String> values) {
+    	//initialize array adapter
+    	public FileArrayAdapter(Context context, List<String> values,List<String> paths) {
     		super(context, R.layout.person_row, values);
     		this.context = context;
     		this.values = values;
+    		this.paths = paths;
     	}
      
     	//get view
@@ -145,14 +149,26 @@ public class DisplayPeopleActivity extends ListActivity {
     		View rowView = inflater.inflate(R.layout.row, parent, false);
     		TextView textView = (TextView) rowView.findViewById(R.id.label);
     		ImageView imageView = (ImageView) rowView.findViewById(R.id.logo);
+    		
+    		//set text
     		textView.setText(values.get(position));
      
-    		// Set icon depending on file type
-    		String s = values.get(position);
-     
-    		System.out.println(s);
-     
-    		imageView.setImageResource(R.drawable.file_small);
+    		//set image
+        	File image_file = new File(paths.get(position) + File.separator + DisplayPersonActivity.PROFILE_PIC_FILE_NAME);
+        	//if such a file exists, try to load person
+        	if(image_file.exists()){
+        		try{
+        			
+        			BitmapFactory.Options options=new BitmapFactory.Options();
+        			options.inSampleSize = 8;
+        			Bitmap image_bitmap = BitmapFactory.decodeFile(image_file.getAbsolutePath(),options);
+        			imageView.setImageBitmap(image_bitmap);
+        			
+        		}catch(Exception e){
+        			Toast.makeText(getApplicationContext(), "Could not map image", Toast.LENGTH_SHORT).show();
+        		}
+        	}
+    	
     		     
     		//return the view
     		return rowView;

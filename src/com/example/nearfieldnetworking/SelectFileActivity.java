@@ -27,6 +27,8 @@ import android.widget.Toast;
 //********************************************************
 public class SelectFileActivity extends ListActivity {
 
+	public static final int SUCCESFULLY_SELECTED_FILE = 37;
+	
 	//private variables
 	private List<String> item = null;
 	private List<String> path = null;
@@ -147,7 +149,7 @@ public class SelectFileActivity extends ListActivity {
     	private final Context context;
     	private final List <String> values;
      
-    	//initialize array adappter
+    	//initialize array adapter
     	public FileArrayAdapter(Context context, List<String> values) {
     		super(context, R.layout.row, values);
     		this.context = context;

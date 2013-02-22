@@ -24,10 +24,10 @@
         android:inputType="phone"
         android:text="TextView" />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/imageButton1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/textView2"
         android:layout_marginLeft="14dp"
@@ -48,6 +48,7 @@
         android:layout_alignParentRight="true"
         android:layout_below="@+id/TextView02"
         android:layout_marginRight="20dp"
+        android:layout_toRightOf="@+id/imageButton1"
         android:ems="10"
         android:inputType="textPostalAddress"
         android:text="TextView" />
@@ -67,7 +68,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/imageButton1"
-        android:layout_below="@+id/TextView03"
+        android:layout_below="@+id/imageButton1"
         android:layout_marginTop="20dp" >
     </ExpandableListView>
 

@@ -14,16 +14,24 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.app.Activity;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,10 +42,12 @@ import android.widget.Toast;
 *************************************************************************/
 
 public class EditPersonActivity extends Activity {
-
+	
+	public static final int ADD_FILE = 2;
+	public static final int ADD_PROFILE_PIC = 1;
+	
 	//private variables
 	private String person_path = "";
-	private boolean editable;
 	private Person person = new Person("");
 	ArrayList<File> categories;
 	ArrayList<ArrayList<File>> subcategories;
@@ -62,7 +72,7 @@ public class EditPersonActivity extends Activity {
 		}
 		
 		//open person's object file
-		final File person_file = new File(person_path + "/.person");
+		final File person_file = new File(person_path + File.separator + DisplayPersonActivity.PERSON_FILE_NAME);
 		if(!person_file.exists()){
 			Toast.makeText(getApplicationContext(), "No person file", Toast.LENGTH_SHORT).show();
 			finish();
@@ -100,8 +110,22 @@ public class EditPersonActivity extends Activity {
 		    	else
 		    		Toast.makeText(getApplicationContext(), "Could not Save", Toast.LENGTH_SHORT).show();
 		    }
-		});;
+		});
 
+		
+		//on image button click
+		ImageView image_view = (ImageView) findViewById(R.id.imageButton1);
+		image_view.setOnClickListener(new View.OnClickListener() {
+		    public void onClick(View v) {
+		    	//select file
+		    	Intent intent = new Intent(Intent.ACTION_PICK);
+    			intent.setType("image/*");
+    			startActivityForResult(intent, ADD_PROFILE_PIC);
+		    }
+		});
+		
+		//load image
+		loadImage();
 		
 		//load list
 		loadList();
@@ -118,26 +142,77 @@ public class EditPersonActivity extends Activity {
     
     //upon return from activity with file
     protected void onActivityResult (int requestCode, int resultCode, Intent data){
+    	super.onActivityResult(requestCode, resultCode, data);
+    	
     	//act according to request code
     	
-    	//if select file
-    	if(resultCode == 37){
-    		Bundle extras = data.getExtras(); 
-        	if(extras !=null)
-        	   {
-        		String file_name = data.getStringExtra("file");		
-        		try {
-					copyFile(categories.get(requestCode).getPath(), file_name);
+    	//add picture
+    	if(requestCode == ADD_PROFILE_PIC){
+    		if(resultCode == RESULT_OK){
+    			
+    		
+    			Uri image_uri = data.getData();
+    			String[] proj = { MediaStore.Images.Media.DATA };
+    		    CursorLoader loader = new CursorLoader(getApplicationContext(), image_uri, proj, null, null, null);
+    		    Cursor cursor = loader.loadInBackground();
+    		    int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+    		    cursor.moveToFirst();
+    		    String image_path = cursor.getString(column_index);
+    		    
+    		    //copy file
+    		    try {
+					copyFile(person_path, image_path,DisplayPersonActivity.PROFILE_PIC_FILE_NAME);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-        	 }
+    			
+    		    //load image
+    		    loadImage();
+    		}
+    	}else{
+    	//add file	
+    		if(resultCode == SelectFileActivity.SUCCESFULLY_SELECTED_FILE){
+        		Bundle extras = data.getExtras(); 
+            	if(extras !=null){
+            		String file_name = data.getStringExtra("file");
+            		//try to copy
+        			try {
+        				copyFile(categories.get(requestCode - ADD_FILE).getPath(), file_name,new File(file_name).getName());
+        			} catch (IOException e) {
+        				// TODO Auto-generated catch block
+        				e.printStackTrace();
+        			}
+            	}
+    		}
+    		
+    		//reload list
+    		loadList();
     	}
     	
+    }
+    
+    
+    //load image from file
+    private void loadImage(){
     	
-    	loadList();
+    	//get image view
+    	ImageView image_view = (ImageView) findViewById(R.id.imageButton1);
     	
+    	//file where picture is stored
+    	File image_file = new File(person_path + File.separator + DisplayPersonActivity.PROFILE_PIC_FILE_NAME);
+    	//if such a file exists, try to load person
+    	if(image_file.exists()){
+    		try{
+    			BitmapFactory.Options options=new BitmapFactory.Options();
+    			options.inSampleSize = 8;
+    			Bitmap image_bitmap = BitmapFactory.decodeFile(image_file.getAbsolutePath(),options);
+    			image_view.setImageBitmap(image_bitmap);
+    			
+    		}catch(Exception e){
+    			Toast.makeText(getApplicationContext(), "Could not map image", Toast.LENGTH_SHORT).show();
+    		}
+    	}
     }
     
     //load list
@@ -184,9 +259,9 @@ public class EditPersonActivity extends Activity {
     
     
     //copy file from one directory to another
-    private void copyFile(String dest_dir_path, String src_path) throws IOException{
+    private void copyFile(String dest_dir_path, String src_path,String name) throws IOException{
     	File src_file = new File(src_path);
-    	File dest_file = new File(dest_dir_path + "/" + src_file.getName());
+    	File dest_file = new File(dest_dir_path + File.separator + name);
     	
     	InputStream in = new FileInputStream(src_file);
         OutputStream out = new FileOutputStream(dest_file);
@@ -201,6 +276,8 @@ public class EditPersonActivity extends Activity {
         out.close();
     	
     }
+    
+
     
     
 }

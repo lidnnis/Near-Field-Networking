@@ -22,7 +22,7 @@ import android.widget.Toast;
 * 
 **************************************************************************************/
 public class FileExpandableListAdapter extends BaseExpandableListAdapter{
-
+	
 		//private variables
 		private Context context;
 		private ArrayList<File> groups;
@@ -74,17 +74,17 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 						try
 						{
 							Intent intent = new Intent(context, SelectFileActivity.class);
-			            	((Activity) context).startActivityForResult(intent,arg0);
+			            	((Activity) context).startActivityForResult(intent,EditPersonActivity.ADD_FILE + arg0);
 						}
 						catch (ActivityNotFoundException e)
 						{
-							Toast.makeText(context, "No PDF Viewer Installed", Toast.LENGTH_LONG).show();
+							Toast.makeText(context, "Could not open select file activity", Toast.LENGTH_LONG).show();
 						}
 					}
 				});
 				
 			}else{
-				//add file link
+				//View File
 				t.setText((CharSequence) ((File) getChild(arg0,arg1)).getName());
 				t.setOnClickListener(new OnClickListener(){
 					@Override
@@ -93,7 +93,7 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 						try
 						{
 							Intent intentUrl = new Intent(Intent.ACTION_VIEW);
-							intentUrl.setDataAndType(Uri.fromFile((File) getChild(arg0,arg1)), "application/pdf");
+							intentUrl.setDataAndType(Uri.fromFile((File) getChild(arg0,arg1)), "application/*.jpg");
 							intentUrl.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 							context.startActivity(intentUrl);
 						}

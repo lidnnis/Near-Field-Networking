@@ -20,9 +20,9 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
 	//private variables
-	static final String main_dir =  Environment.getExternalStorageDirectory() + "/near_field_networking";
-	static final String my_profile_path = main_dir + "/my_profile";
-	static final String people_path = main_dir + "/people";
+	public static final String MAIN_DIR =  Environment.getExternalStorageDirectory() + File.separator + "near_field_networking";
+	public static final String MY_PROFILE_PATH = MAIN_DIR + File.separator + "my_profile";
+	public static final String PEOPLE_PATH = MAIN_DIR + File.separator +  "people";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,30 +31,30 @@ public class MainActivity extends Activity {
 		
 		
 		//create main directory if does not exist
-		File main_public_dir = new File(main_dir);
+		File main_public_dir = new File(MAIN_DIR);
 	    if(!main_public_dir.exists()){
 	    	main_public_dir.mkdir();
 	    }
 
 	    //create my_profile directory if does not exist
-	    File my_profile_dir = new File(my_profile_path);
+	    File my_profile_dir = new File(MY_PROFILE_PATH);
 	    if(!my_profile_dir.exists()){
 	    	my_profile_dir.mkdir();
-	    	File resume_dir = new File(my_profile_path + "/Resume");
+	    	File resume_dir = new File(MY_PROFILE_PATH + File.separator + "Resume");
 	    	resume_dir.mkdir();
-	    	File portfolio_dir = new File(my_profile_path + "/Profile");
+	    	File portfolio_dir = new File(MY_PROFILE_PATH + File.separator + "Portfolio");
 	    	portfolio_dir.mkdir();
 	    }
 
 	  //create people directory if does not exist
-	    File people_dir = new File(people_path);
+	    File people_dir = new File(PEOPLE_PATH);
 	    if(!people_dir.exists()){
 	    	people_dir.mkdir();
 	    }
 	    
 	    //create my profile's person object if does not exist
 	    Person user = new Person("Your Name");
-    	File person_file = new File(my_profile_path + "/.person");
+    	File person_file = new File(MY_PROFILE_PATH + "/.person");
 	    if(!person_file.exists()){
 			user.writeToFile(person_file);
 	    }
@@ -64,7 +64,7 @@ public class MainActivity extends Activity {
 	    my_profile_button.setOnClickListener(new View.OnClickListener() {
 	    	public void onClick(View v) {
 	    		Intent intent = new Intent(getBaseContext(), DisplayPersonActivity.class);
-	           	intent.putExtra("person_directory",my_profile_path);
+	           	intent.putExtra("person_directory",MY_PROFILE_PATH);
 	           	intent.putExtra("editable", true);
 	           	startActivity(intent);  
 	    	}
@@ -75,7 +75,7 @@ public class MainActivity extends Activity {
 	    people_button.setOnClickListener(new View.OnClickListener() {
 	    	public void onClick(View v) {
 	    		Intent intent = new Intent(getBaseContext(), DisplayPeopleActivity.class);
-	           	intent.putExtra("people_directory",people_path);
+	           	intent.putExtra("people_directory",PEOPLE_PATH);
 	           	startActivity(intent);  
 	    	}
 	    });

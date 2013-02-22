@@ -18,11 +18,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +38,8 @@ import android.widget.Toast;
  *******************************************************/
 public class DisplayPersonActivity extends Activity {
 
+	static final String PROFILE_PIC_FILE_NAME = ".profile_pic.jpg";
+	static final String PERSON_FILE_NAME = ".person";
 	
 	//private variables
 	private String person_path = "";
@@ -76,6 +81,9 @@ public class DisplayPersonActivity extends Activity {
 			edit_button.setVisibility(View.GONE);
 		}
 			
+		//load image profile image from file
+		loadImage();
+		
 		//load person from file
 		loadPerson();
 		
@@ -97,13 +105,44 @@ public class DisplayPersonActivity extends Activity {
     	//refresh the person and files (they may have changed after editing)
     	loadPerson();
     	loadList();
+    	loadImage();
     }
+    
+    //load image from file
+    private void loadImage(){
+    	
+    	//get image view
+    	ImageView image_view = (ImageView) findViewById(R.id.image1);
+    	
+    	//file where picture is stored
+    	File image_file = new File(person_path + File.separator + PROFILE_PIC_FILE_NAME);
+    	//if such a file exists, try to load person
+    	if(image_file.exists()){
+    		try{
+    			BitmapFactory.Options options=new BitmapFactory.Options();
+    			options.inSampleSize = 8;
+    			Bitmap image_bitmap = BitmapFactory.decodeFile(image_file.getAbsolutePath(),options);
+    			image_view.setImageBitmap(image_bitmap);
+    			
+    		}catch(Exception e){
+    			Toast.makeText(getApplicationContext(), "Could not map image", Toast.LENGTH_SHORT).show();
+    		}
+    	}
+    			
+    			
+    	//set values layout
+    	TextView name_text = (TextView) findViewById(R.id.textView2);
+    	name_text.setText(person.getName());
+    	
+    }
+    
+    
     
     //load person from file
     private void loadPerson(){
     	
     	//open person's object file
-    	File person_file = new File(person_path + "/.person");
+    	File person_file = new File(person_path + File.separator + PERSON_FILE_NAME);
     	if(!person_file.exists()){
     		Toast.makeText(getApplicationContext(), "No person file", Toast.LENGTH_SHORT).show();
   				finish();

@@ -13,6 +13,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 public class NFCService {
 	private static final String NAME = "NFN";
@@ -195,8 +196,31 @@ public class NFCService {
             if (mState != STATE_CONNECTED) return;
             r = mConnectedThread;
         }
-        // Perform the write unsynchronized
-        r.write(bytes);
+        
+        int totalBytes = bytes.length;
+        Log.d("totalBytes",Integer.toString(totalBytes));
+        int pos = 0;
+         
+        while (pos < totalBytes)
+        {
+        	byte[] tempBuffer = new byte[1024];
+        	if (totalBytes-pos < 1024)
+        	{
+        		System.arraycopy(bytes,pos,tempBuffer,0,totalBytes-pos);
+        		pos += totalBytes-pos;
+        	}
+        	else
+        	{
+            	System.arraycopy(bytes,pos,tempBuffer,0,1024);
+            	pos += 1024; 
+        	}
+        	
+        	Log.d("curPos",Integer.toString(pos));
+        	Log.d("toString",new String(tempBuffer));
+        	// Perform the write unsynchronized
+        	r.write(tempBuffer);
+        	
+        }
         
 //        Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_DONE);
 //        Bundle bundle = new Bundle();
@@ -371,8 +395,8 @@ public class NFCService {
 		}
 
 		public void run() {
-			byte[] buffer = new byte[1024];
-			byte[] fileBuffer = new byte[1024*1024]; // buffer store for the stream
+			//byte[] buffer = new byte[1024];
+			//byte[] fileBuffer = new byte[1024]; // buffer store for the stream
 			int bytes; // bytes returned from read()
 			int pos = 0;
 			
@@ -380,9 +404,13 @@ public class NFCService {
 			// Keep listening to the InputStream until an exception occurs
 			while (true) {
 				try {
+					byte[] buffer = new byte[1024];
 					// Read from the InputStream
 					bytes = mmInStream.read(buffer);
-					System.arraycopy(buffer,0,fileBuffer,pos,bytes);
+					//System.arraycopy(buffer,0,fileBuffer,0,bytes);
+					
+					//Log.d("string", new String(buffer));
+					
 					pos += bytes;
 					
 					
@@ -391,7 +419,7 @@ public class NFCService {
 					//byte[] sendBuffer = new byte[pos];
 					//System.arraycopy(fileBuffer,0, sendBuffer,0, pos);
 					// Send the obtained bytes to the UI activity
-					mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, pos, -1, fileBuffer)
+					mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, pos, bytes, buffer)
 							.sendToTarget();
 				} catch (IOException e) {
 					break;

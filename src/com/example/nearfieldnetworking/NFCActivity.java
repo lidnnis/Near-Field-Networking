@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import android.app.ActionBar;
 import android.bluetooth.BluetoothAdapter;
@@ -65,6 +67,12 @@ public class NFCActivity extends FragmentActivity implements
 	public static final String TOAST = "toast";
 
 	public static final String PREFS_NAME = "NFCPrefsFile";
+
+	private String recievedFilename;
+	private FileOutputStream fos = null;
+	private int totalSize;
+	//private int prevSize = 0;
+	private boolean flag = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -183,8 +191,13 @@ public class NFCActivity extends FragmentActivity implements
 		String macAddr = new String(msg.getRecords()[0].getPayload());
 
 		// Pair BT Devices
-		if (!mBluetoothAdapter.getBondedDevices().isEmpty())
+		if (!mBluetoothAdapter.getBondedDevices().isEmpty()) {
 			bt = mBluetoothAdapter.getRemoteDevice(macAddr);
+		} else {
+			Toast.makeText(getApplicationContext(), "Something went wrong",
+					Toast.LENGTH_LONG).show();
+			finish();
+		}
 
 		mNFCService.connect(bt);
 
@@ -246,7 +259,8 @@ public class NFCActivity extends FragmentActivity implements
 			if (resultCode == RESULT_OK) {
 				filesToSend = new Uri[] { intent.getData() };
 				Toast.makeText(getApplicationContext(),
-						filesToSend[0].getPath(), Toast.LENGTH_LONG).show();
+						"Sending " + filesToSend[0].getPath(),
+						Toast.LENGTH_LONG).show();
 
 				try {
 					mNFCService.writeToFile(readBytes(filesToSend));
@@ -302,99 +316,163 @@ public class NFCActivity extends FragmentActivity implements
 
 			case MESSAGE_READ:
 				byte[] readBuf = (byte[]) msg.obj;
-				
+				int pos = msg.arg1;
 				// construct a string from the valid bytes in the buffer
 
-				//Array.Resize(readBuf, 5);
-				
-				byte[] headerBuf = new byte[1024]; 
-				System.arraycopy(readBuf,0,headerBuf,0,1024);
-				
-				Log.d("wtf",Integer.toString(msg.arg1));
-				
-//				Toast.makeText(getApplicationContext(),
-//						new String(headerBuf), Toast.LENGTH_SHORT)
-//						.show();
-				
-				byte[] fileBuf = new byte[msg.arg1]; 
-				
-				
-				System.arraycopy(readBuf,1024,fileBuf,0,msg.arg1);
-				
-				File path = Environment.getExternalStorageDirectory();
-				File file = new File(path + "/NFN", new String(headerBuf).trim());
+				byte[] buffer = new byte[1024];
 
-				FileOutputStream fos = null;
-				try {
-					fos = new FileOutputStream(file);
-				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				try {
-					fos.write(fileBuf);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				try {
-					fos.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				byte[] totalBytes = new byte[512];
+
+				// Log.d("totalBytes",Integer.toString(wrapped.getInt()));
+
+				// Toast.makeText(getApplicationContext(),
+				// new String(headerBuf), Toast.LENGTH_SHORT)
+				// .show();
+
+				Log.d("pos", Integer.toString(pos));
+
+				// Log.d("string", new String(readBuf));
+
+				// Array.Resize(readBuf, 5);
+				if (pos <= 1024 && !flag) {
+					// get filename
+					System.arraycopy(readBuf, 0, buffer, 0, 512);
+					recievedFilename = new String(buffer).trim();
+
+					// get totalsize
+					System.arraycopy(readBuf, 511, totalBytes, 0, 512);
+
+					ByteBuffer wrapped = ByteBuffer.wrap(totalBytes);
+					IntBuffer ib = wrapped.asIntBuffer();
+					totalSize = ib.get(0);
+
+					Log.d("totalBytes", Integer.toString(totalSize));
+
+					File path = Environment.getExternalStorageDirectory();
+					File file = new File(path + "/NFN", recievedFilename);
+
+					try {
+						fos = new FileOutputStream(file);
+					} catch (FileNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					// prevSize = pos;
+					flag = true;
+
 				}
 
+				else if (pos > 1024) {
+
+					if (pos-totalSize > 0) {
+						buffer = new byte[pos-totalSize];
+						System.arraycopy(readBuf, 0, buffer, 0, pos-totalSize);
+					}
+
+//					else
+						Log.d("size", Integer.toString(msg.arg2));
+					buffer = new byte[msg.arg2];
+					System.arraycopy(readBuf, 0, buffer, 0, msg.arg2);
+					// prevSize = pos;
+
+					// Copy entire contents of file
+
+					try {
+						fos.write(buffer);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				}
 				// String readMessage = new String(readBuf, 0, msg.arg1);
 				// Toast.makeText(getApplicationContext(), readMessage,
 				// Toast.LENGTH_LONG).show();
 
-				if (newFragment.getDialog() != null) {
+				if (pos >= totalSize && newFragment.getDialog() != null) {
 					if (newFragment.getDialog().isShowing()) {
 						newFragment.getDialog().dismiss();
 					}
+
+					try {
+						fos.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					Toast.makeText(getApplicationContext(),
+							recievedFilename + " Succesfully Downloaded",
+							Toast.LENGTH_SHORT).show();
+					mNFCService.stop();
+					finish();
 				}
-				// mNFCService.stop();
-				// finish();
+
 				break;
 			case MESSAGE_DONE:
 				Toast.makeText(getApplicationContext(),
 						msg.getData().getString(TOAST), Toast.LENGTH_SHORT)
 						.show();
-				// mNFCService.stop();
-				// finish();
+				mNFCService.stop();
+				finish();
 				break;
 			}
 		}
 	};
 
-	//converts file to bytes
+	// converts file to bytes
 	public byte[] readBytes(Uri[] uri) throws IOException {
 		// this dynamically extends to take the bytes you read
 		InputStream inputStream = getContentResolver().openInputStream(uri[0]);
 		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
 
 		String fname = new File(uri[0].getPath()).getName();
-		
+
 		int headerSize = 1024;
 		byte[] headerBuffer = new byte[headerSize];
-		
-		System.arraycopy(fname.getBytes(),0,headerBuffer,0,fname.getBytes().length);
+
+		System.arraycopy(fname.getBytes(), 0, headerBuffer, 0,
+				fname.getBytes().length);
 		byteBuffer.write(headerBuffer);
-		
+
 		// this is storage overwritten on each iteration with bytes
 		int bufferSize = 1024;
 		byte[] buffer = new byte[bufferSize];
 
 		// we need to know how may bytes were read to write them to the
 		// byteBuffer
+
 		int len = 0;
+		Integer totalBytes = 1024;
 		while ((len = inputStream.read(buffer)) != -1) {
+			totalBytes += len;
 			byteBuffer.write(buffer, 0, len);
 			byteBuffer.flush();
 		}
 
+		ByteBuffer b = ByteBuffer.allocate(4);
+		b.putInt(totalBytes);
+
 		// and then we can return your byte array.
-		return byteBuffer.toByteArray();
+		byte[] bb = byteBuffer.toByteArray();
+
+		// Log.d("sender", totalBytes.toString());
+
+		// Add total number of bytes to header
+		System.arraycopy(b.array(), 0, bb, 511, b.array().length);
+
+		// byte[] tB = new byte[512];
+		// System.arraycopy(bb,511,tB,0,512);
+		//
+		// int tByte;
+
+		// ByteBuffer wrapped = ByteBuffer.wrap(tB);
+		// IntBuffer ib = wrapped.asIntBuffer();
+		// int i0 = ib.get(0);
+		//
+		// Log.d("totalBytes",Integer.toString(i0));
+
+		return bb;
 	}
 
 }

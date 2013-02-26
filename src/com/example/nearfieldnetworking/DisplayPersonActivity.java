@@ -51,6 +51,9 @@ public class DisplayPersonActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.display_person);
         
+        ActionBar actionBar = getActionBar();
+	actionBar.setDisplayHomeAsUpEnabled(true);
+        
         //fetch data from intent
         Bundle extras = getIntent().getExtras(); 
 		if(extras !=null)
@@ -90,7 +93,17 @@ public class DisplayPersonActivity extends Activity {
 		//load list of files associated with the person
 		loadList();
     }
-
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) { 
+        switch (item.getItemId()) {
+        case android.R.id.home: 
+            onBackPressed();
+            return true;
+        }
+    	return super.onOptionsItemSelected(item);
+    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

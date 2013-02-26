@@ -216,7 +216,7 @@ public class NFCService {
         	}
         	
         	Log.d("curPos",Integer.toString(pos));
-        	Log.d("toString",new String(tempBuffer));
+        	//Log.d("toString",new String(tempBuffer));
         	// Perform the write unsynchronized
         	r.write(tempBuffer);
         	

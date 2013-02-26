@@ -78,7 +78,7 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 						}
 						catch (ActivityNotFoundException e)
 						{
-							Toast.makeText(context, "Could not open select file activity", Toast.LENGTH_LONG).show();
+							Toast.makeText(context, "Could not open select file activity", Toast.LENGTH_SHORT).show();
 						}
 					}
 				});
@@ -93,13 +93,13 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 						try
 						{
 							Intent intentUrl = new Intent(Intent.ACTION_VIEW);
-							intentUrl.setDataAndType(Uri.fromFile((File) getChild(arg0,arg1)), "application/*.jpg");
+							intentUrl.setDataAndType(Uri.fromFile((File) getChild(arg0,arg1)), "application/*");
 							intentUrl.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 							context.startActivity(intentUrl);
 						}
 						catch (ActivityNotFoundException e)
 						{
-							Toast.makeText(context, "No PDF Viewer Installed", Toast.LENGTH_LONG).show();
+							Toast.makeText(context, "No PDF Viewer Installed", Toast.LENGTH_SHORT).show();
 						}
 					}
 				});

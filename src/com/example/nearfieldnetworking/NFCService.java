@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,6 +25,7 @@ public class NFCService {
 	private ConnectThread mConnectThread;
 	private ConnectedThread mConnectedThread;
 	private int mState;
+	//private AsyncTask fileWrite;
 
 	// Constants that indicate the current connection state
 	public static final int STATE_NONE = 0; // we're doing nothing
@@ -197,30 +199,7 @@ public class NFCService {
             r = mConnectedThread;
         }
         
-        int totalBytes = bytes.length;
-        Log.d("totalBytes",Integer.toString(totalBytes));
-        int pos = 0;
-         
-        while (pos < totalBytes)
-        {
-        	byte[] tempBuffer = new byte[1024];
-        	if (totalBytes-pos < 1024)
-        	{
-        		System.arraycopy(bytes,pos,tempBuffer,0,totalBytes-pos);
-        		pos += totalBytes-pos;
-        	}
-        	else
-        	{
-            	System.arraycopy(bytes,pos,tempBuffer,0,1024);
-            	pos += 1024; 
-        	}
-        	
-        	Log.d("curPos",Integer.toString(pos));
-        	//Log.d("toString",new String(tempBuffer));
-        	// Perform the write unsynchronized
-        	r.write(tempBuffer);
-        	
-        }
+        new writeFileTask().execute(bytes,r);
         
 //        Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_DONE);
 //        Bundle bundle = new Bundle();
@@ -443,4 +422,41 @@ public class NFCService {
 			}
 		}
 	}
+	
+	private class writeFileTask extends AsyncTask<Object, Void, Void> {
+
+		@Override
+		protected Void doInBackground(Object... args) {
+			
+			 byte[] bytes = (byte[])args[0];
+			 ConnectedThread r = (ConnectedThread)args[1];
+			
+			 int totalBytes = bytes.length;
+		        Log.d("totalBytes",Integer.toString(totalBytes));
+		        int pos = 0;
+		         
+		        while (pos < totalBytes)
+		        {
+		        	byte[] tempBuffer = new byte[1024];
+		        	if (totalBytes-pos < 1024)
+		        	{
+		        		System.arraycopy(bytes,pos,tempBuffer,0,totalBytes-pos);
+		        		pos += totalBytes-pos;
+		        	}
+		        	else
+		        	{
+		            	System.arraycopy(bytes,pos,tempBuffer,0,1024);
+		            	pos += 1024; 
+		        	}
+		        	
+		        	Log.d("curPos",Integer.toString(pos));
+		        	//Log.d("toString",new String(tempBuffer));
+		        	// Perform the write unsynchronized
+		        	r.write(tempBuffer);
+		        	
+		        }
+			
+			
+			return null;
+		}}
 }

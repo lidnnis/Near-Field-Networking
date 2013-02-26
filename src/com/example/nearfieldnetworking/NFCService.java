@@ -200,7 +200,7 @@ public class NFCService {
         }
         
         new writeFileTask().execute(bytes,r);
-        
+          
 //        Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_DONE);
 //        Bundle bundle = new Bundle();
 //        bundle.putString(NFCActivity.TOAST, "File Transfer Completed");
@@ -453,6 +453,13 @@ public class NFCService {
 		        	//Log.d("toString",new String(tempBuffer));
 		        	// Perform the write unsynchronized
 		        	r.write(tempBuffer);
+		        	
+		        	Message msg = mFileHandler
+		    				.obtainMessage(NFCActivity.MESSAGE_UPDATE);
+		    		Bundle bundle = new Bundle();
+		    		bundle.putInt(NFCActivity.PROGRESS, pos);
+		    		msg.setData(bundle);
+		    		mFileHandler.sendMessage(msg);
 		        	
 		        }
 			

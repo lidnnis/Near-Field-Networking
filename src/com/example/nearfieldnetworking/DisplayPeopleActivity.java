@@ -43,6 +43,9 @@ public class DisplayPeopleActivity extends ListActivity {
         setContentView(R.layout.display_people);
         num_contacts = (TextView)findViewById(R.id.path);
         
+       	ActionBar actionBar = getActionBar();
+	actionBar.setDisplayHomeAsUpEnabled(true);
+	
         //fetch data from the intent
         Bundle extras = getIntent().getExtras(); 
         if(extras !=null)
@@ -123,7 +126,15 @@ public class DisplayPeopleActivity extends ListActivity {
 
     }
 
-    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) { 
+        switch (item.getItemId()) {
+        case android.R.id.home: 
+            onBackPressed();
+            return true;
+        }
+    	return super.onOptionsItemSelected(item);
+    }
     
     //private adapter class
     private class FileArrayAdapter extends ArrayAdapter<String> {

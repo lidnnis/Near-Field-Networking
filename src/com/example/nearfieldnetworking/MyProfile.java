@@ -32,6 +32,9 @@ public class MyProfile extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.my_profile);
         
+        ActionBar actionBar = getActionBar();
+	actionBar.setDisplayHomeAsUpEnabled(true);
+	
         //fetch data from intent
         Bundle extras = getIntent().getExtras(); 
 		if(extras !=null)
@@ -88,6 +91,16 @@ public class MyProfile extends Activity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) { 
+        switch (item.getItemId()) {
+        case android.R.id.home: 
+            onBackPressed();
+            return true;
+        }
+    	return super.onOptionsItemSelected(item);
     }
     
     //upon return from activity with file

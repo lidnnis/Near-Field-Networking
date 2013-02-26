@@ -35,7 +35,7 @@ public class DisplayPeopleActivity extends ListActivity {
 	private TextView num_contacts;
 	private String people_path = "/";
  
-
+ 
     //when activity is created
     @Override
     public void onCreate(Bundle savedInstanceState) {

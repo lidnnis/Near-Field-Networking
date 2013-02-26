@@ -29,6 +29,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.ActionBar;
+import android.view.Menu;
+import android.view.MenuItem;
 
 /********************************************************
  *  DisplayPersonActivity

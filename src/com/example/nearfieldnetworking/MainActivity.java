@@ -1,8 +1,10 @@
 package com.example.nearfieldnetworking;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 
@@ -90,7 +92,6 @@ public class MainActivity extends Activity {
 	    });
 	    
 	    
-	    
 	}
 
 	@Override
@@ -136,6 +137,53 @@ public class MainActivity extends Activity {
 		    (NotificationManager) getSystemService(this.NOTIFICATION_SERVICE);
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(13, mBuilder.build());
+	}
+	
+	//addNewPerson
+	//assuming given directory containing all of the person's files
+	public void addPerson(String given_dir_path){
+		
+		//make sure given_dir is a directory
+		File given_dir = new File(given_dir_path);
+		if(!given_dir.exists() || !given_dir.isDirectory()){
+			Toast.makeText(getApplicationContext(), "No such directory does not exist", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		
+		//if there is a person object, get it
+		File person_file = new File(given_dir_path + File.separator + DisplayPersonActivity.PERSON_FILE_NAME);
+		if(!person_file.exists()){
+			Toast.makeText(getApplicationContext(), "No person file given", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		Person person;
+		try{
+			FileInputStream fin = new FileInputStream(person_file);
+			ObjectInputStream oin = new ObjectInputStream(fin);
+	    	person = (Person) oin.readObject();
+		}catch(Exception e){
+			Toast.makeText(getApplicationContext(), "Error reading person object", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		
+		//new directory
+		String new_dir_path = MainActivity.PEOPLE_PATH + File.separator + person.getName();
+		File new_dir = new File(new_dir_path); 
+		
+		//handle conflicts
+		for(int i = 1; new_dir.exists();i++){
+			new_dir = new File(new_dir_path + Integer.toString(i));
+		}
+		
+		//move directory
+		if(given_dir.renameTo(new_dir)){
+			Toast.makeText(getApplicationContext(), "Successfully added " + person.getName(), Toast.LENGTH_SHORT).show();
+		}else{
+			Toast.makeText(getApplicationContext(), "Error adding person", Toast.LENGTH_SHORT).show();
+		}
+		
+		
+		
 	}
 	
 }

@@ -8,9 +8,14 @@ import java.io.ObjectOutputStream;
 
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.NotificationCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -74,11 +79,18 @@ public class MainActivity extends Activity {
 	    Button people_button = (Button) findViewById(R.id.button2);
 	    people_button.setOnClickListener(new View.OnClickListener() {
 	    	public void onClick(View v) {
+	    		//notification
+			    sendBasicNotification("Near Field Networking","You clicked the people button.");
+	    		
+			    //launch intent
 	    		Intent intent = new Intent(getBaseContext(), DisplayPeopleActivity.class);
 	           	intent.putExtra("people_directory",PEOPLE_PATH);
 	           	startActivity(intent);  
 	    	}
 	    });
+	    
+	    
+	    
 	}
 
 	@Override
@@ -105,5 +117,25 @@ public class MainActivity extends Activity {
 		   Intent intent = new Intent(this, NFCActivity.class);
 		   startActivity(intent);
 	}
-
+	
+	//send notification
+	public void sendBasicNotification(String title,String message) {
+		
+		NotificationCompat.Builder mBuilder =
+		        new NotificationCompat.Builder(this)
+		        .setSmallIcon(R.drawable.nfc_icon)
+		        .setContentTitle(title)
+		        .setContentText(message);
+	
+		// Creates an explicit intent for an Activity in your app
+		Intent resultIntent = new Intent(this, MainActivity.class);
+		
+		mBuilder.setContentIntent(PendingIntent.getActivity(this,0,resultIntent,0));
+		mBuilder.setAutoCancel(true);
+		NotificationManager mNotificationManager =
+		    (NotificationManager) getSystemService(this.NOTIFICATION_SERVICE);
+		// mId allows you to update the notification later on.
+		mNotificationManager.notify(13, mBuilder.build());
+	}
+	
 }

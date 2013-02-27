@@ -115,6 +115,9 @@ public class EditPersonActivity extends Activity {
 		    		Toast.makeText(getApplicationContext(), "Saved", Toast.LENGTH_SHORT).show();
 		    	else
 		    		Toast.makeText(getApplicationContext(), "Could not Save", Toast.LENGTH_SHORT).show();
+		    	
+		    	//return to display profile activity
+		    	finish();
 		    }
 		});
 

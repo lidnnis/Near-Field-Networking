@@ -242,6 +242,7 @@ public class NFCService {
 				// code
 				tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(
 						NAME, MY_UUID);
+				//tmp = InsecureBluetooth.listenUsingRfcommWithServiceRecord(mBluetoothAdapter, NAME, MY_UUID, true);
 			} catch (IOException e) {
 			}
 			mmServerSocket = tmp;
@@ -250,7 +251,7 @@ public class NFCService {
 		public void run() {
 			BluetoothSocket socket = null;
 			// Keep listening until exception occurs or a socket is returned
-			while (true) {
+			while (mState != STATE_CONNECTED) {
 				try {
 					socket = mmServerSocket.accept();
 				} catch (IOException e) {
@@ -305,7 +306,10 @@ public class NFCService {
 			try {
 				// MY_UUID is the app's UUID string, also used by the server
 				// code
+				
+				Log.d("debug",MY_UUID.toString());
 				tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
+				//tmp = InsecureBluetooth.createRfcommSocketToServiceRecord(device, MY_UUID, true);
 			} catch (IOException e) {
 			}
 			mmSocket = tmp;

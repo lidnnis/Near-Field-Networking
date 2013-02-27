@@ -195,13 +195,13 @@ public class NFCActivity extends FragmentActivity implements
 		String macAddr = new String(msg.getRecords()[0].getPayload());
 
 		// Pair BT Devices
-		if (!mBluetoothAdapter.getBondedDevices().isEmpty()) {
+//		if (!mBluetoothAdapter.getBondedDevices().isEmpty()) {
 			bt = mBluetoothAdapter.getRemoteDevice(macAddr);
-		} else {
-			Toast.makeText(getApplicationContext(), "Something went wrong",
-					Toast.LENGTH_LONG).show();
-			finish();
-		}
+//		} else {
+//			Toast.makeText(getApplicationContext(), "Something went wrong",
+//					Toast.LENGTH_LONG).show();
+//			finish();
+//		}
 
 		mNFCService.connect(bt);
 
@@ -284,6 +284,19 @@ public class NFCActivity extends FragmentActivity implements
 					progressSBar
 							.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 					progressSBar.setTitle("Sending");
+					
+					
+					progressSBar.setOnCancelListener(new OnCancelListener() {
+						@Override
+						public void onCancel(DialogInterface dialog) {
+							mNFCService.stop();
+							Toast.makeText(getApplicationContext(),
+									"Connection Terminated", Toast.LENGTH_LONG).show();
+							finish();
+
+						}
+					});
+
 
 					mNFCService.writeToFile(readBytes(filesToSend));
 
@@ -396,6 +409,18 @@ public class NFCActivity extends FragmentActivity implements
 						progressBar.setTitle("Downloading");
 						progressBar.setMessage("File: " + recievedFilename);
 						progressBar.setMax(totalSize);
+						
+						progressBar.setOnCancelListener(new OnCancelListener() {
+							@Override
+							public void onCancel(DialogInterface dialog) {
+								mNFCService.stop();
+								Toast.makeText(getApplicationContext(),
+										"Connection Terminated", Toast.LENGTH_LONG).show();
+								finish();
+
+							}
+						});
+						
 						progressBar.show();
 
 						// prevSize = pos;
@@ -446,18 +471,18 @@ public class NFCActivity extends FragmentActivity implements
 						progressBar.dismiss();
 
 					Toast.makeText(getApplicationContext(),
-							recievedFilename + " Succesfully Downloaded",
+							recievedFilename + " succesfully downloaded",
 							Toast.LENGTH_SHORT).show();
 					
-					try {
-						synchronized (this) {
-							wait(1000);
-						}
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
+//					try {
+//						synchronized (this) {
+//							wait(1000);
+//						}
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					
 					
 					mNFCService.stop();
 					finish();
@@ -479,7 +504,7 @@ public class NFCActivity extends FragmentActivity implements
 				else {
 					progressSBar.dismiss();
 
-					Toast.makeText(getApplicationContext(), "Files sent",
+					Toast.makeText(getApplicationContext(), "Files sent succesfully",
 							Toast.LENGTH_SHORT).show();
 
 					try {

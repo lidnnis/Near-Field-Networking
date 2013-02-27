@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v4.app.DialogFragment;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +32,8 @@ import android.widget.Toast;
 import android.app.ActionBar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 
 /********************************************************
  *  DisplayPersonActivity
@@ -39,7 +42,7 @@ import android.view.MenuItem;
  * 		and a boolean indicating whether or the profile can be edited
  *
  *******************************************************/
-public class DisplayPersonActivity extends Activity {
+public class DisplayPersonActivity extends FragmentActivity {
 
 	static final String PROFILE_PIC_FILE_NAME = ".profile_pic.jpg";
 	static final String PERSON_FILE_NAME = ".person";
@@ -48,6 +51,7 @@ public class DisplayPersonActivity extends Activity {
 	private String person_path = "";
 	private boolean editable;
 	private Person person = new Person("");
+	private DialogFragment newFragment;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +90,23 @@ public class DisplayPersonActivity extends Activity {
 			//else hide the button
 			edit_button.setVisibility(View.GONE);
 		}
+		
+		//FAIZAN ADD
+		Button dialog_button = (Button) findViewById(R.id.button2);
+		
+		dialog_button.setOnClickListener(new View.OnClickListener(){
+			public void onClick(View v){
+				
+			
+				Bundle args = new Bundle();
+				args.putString("passPath",person_path);
+				
+				newFragment = new FileSelectDialog();
+				newFragment.setArguments(args);
+				newFragment.show(getSupportFragmentManager(), "chooseFiles");
+			}
+		});;
+		//FINISH FAIZAN ADD
 			
 		//load image profile image from file
 		loadImage();

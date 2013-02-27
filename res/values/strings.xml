@@ -22,4 +22,10 @@
     <string name="edit_button">Edit</string>
     <string name="save_button">Save</string>
 
+            <!-- Faizan added below-->
+    <string name="dialog_button">Dialog</string>
+    <string name="dialog_title">Choose Files to Send</string>
+    <string name="send">send</string>
+    <string name="cancel">Cancel</string>
+    <string name="menu_dialog_test">Select Files</string>
 </resources>

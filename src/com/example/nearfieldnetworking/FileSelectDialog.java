@@ -4,9 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
+import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 import android.content.DialogInterface;
@@ -53,10 +57,18 @@ public class FileSelectDialog extends DialogFragment {
 			}
 		}
 		
-		CheckableFileExpandableList adapter = new CheckableFileExpandableList(getActivity(), categories,subcategories,false);
+		CheckableFileExpandableList adapter = new CheckableFileExpandableList(getActivity(), categories,subcategories);
 
 		// Set this blank adapter to the list view
 	    list_view.setAdapter(adapter);
+		list_view.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+		    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+		    	CheckBox cb = (CheckBox)v.findViewById( R.id.checkBox1 );
+		        if( cb != null )
+		            cb.toggle();
+		        return false;
+		    }
+		});
 		
 //		String[] dialog_options = subcategories.toArray(new String[subcategories.size()]);
         
@@ -64,6 +76,7 @@ public class FileSelectDialog extends DialogFragment {
 		//Tracks selected items
 		
 		builder.setView(list_view);
+		
 	/*	
 		final List<Integer> mSelectedItems = new ArrayList<Integer>();
         
@@ -99,4 +112,7 @@ public class FileSelectDialog extends DialogFragment {
         // Create the AlertDialog object and return it
         return builder.create();
     }
+	
+
+    
 }

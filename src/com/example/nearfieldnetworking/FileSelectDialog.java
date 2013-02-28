@@ -57,48 +57,29 @@ public class FileSelectDialog extends DialogFragment {
 			}
 		}
 		
-		CheckableFileExpandableList adapter = new CheckableFileExpandableList(getActivity(), categories,subcategories);
-
+		ArrayList<ArrayList<Boolean>> checkBoxValues = new ArrayList<ArrayList<Boolean>>();
+		for(int i =0; i<categories.size();i++){
+			ArrayList<Boolean> defaultValues = new ArrayList<Boolean>();
+			for(int j = 0; j  < subcategories.get(i).size();j++){
+				defaultValues.add(true);
+			}
+			checkBoxValues.add(defaultValues);
+		}
+			
+		
+		CheckableFileExpandableList adapter = new CheckableFileExpandableList(getActivity(), categories,subcategories,checkBoxValues);
+		
 		// Set this blank adapter to the list view
 	    list_view.setAdapter(adapter);
-		list_view.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-		    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-		    	CheckBox cb = (CheckBox)v.findViewById( R.id.checkBox1 );
-		        if( cb != null )
-		            cb.toggle();
-		        return false;
-		    }
-		});
-		
-//		String[] dialog_options = subcategories.toArray(new String[subcategories.size()]);
-        
-		//Toast.makeText(getActivity(), dialog_options, Toast.LENGTH_SHORT).show();
-		//Tracks selected items
+	     for(int i = 0; i < adapter.getGroupCount();i++){
+	    	 list_view.expandGroup(i);
+	      }
+
 		
 		builder.setView(list_view);
 		
-	/*	
-		final List<Integer> mSelectedItems = new ArrayList<Integer>();
-        
-		builder.setMultiChoiceItems(dialog_options, null, new DialogInterface.OnMultiChoiceClickListener() 
-        		{
-        			@Override
-        			public void onClick(DialogInterface dialog, int which, boolean isChecked)
-        			{
-        				if (isChecked) 
-        				{
-        					// If user selects, add item to selected items
-        					mSelectedItems.add(which);
-        				}
-        				else if(mSelectedItems.contains(which))
-        				{
-        					mSelectedItems.remove(Integer.valueOf(which));
-        				}
-        			}
-        		})
-        		
         		//Buttom buttons
-        	*/
+        	
                builder.setPositiveButton(R.string.send, new DialogInterface.OnClickListener() {
                    public void onClick(DialogInterface dialog, int id) {
                        // Send Files

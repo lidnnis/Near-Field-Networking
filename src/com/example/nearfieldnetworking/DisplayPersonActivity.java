@@ -96,7 +96,6 @@ public class DisplayPersonActivity extends FragmentActivity {
 		
 		dialog_button.setOnClickListener(new View.OnClickListener(){
 			public void onClick(View v){
-				
 			
 				Bundle args = new Bundle();
 				args.putString("passPath",person_path);

@@ -29,30 +29,16 @@ public class CheckableFileExpandableList extends BaseExpandableListAdapter{
 		//private variables
 		private Context context;
 		private ArrayList<File> groups;
-		private ArrayList<ArrayList<File>> files;
-		private ArrayList<ArrayList<CheckableFile>> children;
+		private ArrayList<ArrayList<File>> children;
+		private ArrayList<ArrayList<Boolean>> checkBoxValues;
 		private LayoutInflater inflater;
 		
 		//constructor
-		CheckableFileExpandableList(Context context,ArrayList<File> groups,ArrayList<ArrayList<File>> files){
+		CheckableFileExpandableList(Context context,ArrayList<File> groups,ArrayList<ArrayList<File>> children,ArrayList<ArrayList<Boolean>> defaultCheckedValues){
 			this.context = context;
-			this.groups = groups;
-			this.files = files;
-			
-			//Create a double nested Arraylist of type CheckableFiles rather than File
-			ArrayList<ArrayList<CheckableFile>> childrenTemp = new ArrayList<ArrayList<CheckableFile>>();
-			for(int i =0; i<files.size(); i++)
-			{
-				ArrayList<CheckableFile> temp = new ArrayList<CheckableFile>();
-				for(int j=0; j< files.get(i).size(); j++)
-				{
-					CheckableFile c = new CheckableFile(files.get(i).get(j),false);
-					temp.add(c);
-				}
-				childrenTemp.add(temp);
-			}
-			
-			this.children = childrenTemp;
+			this.groups = groups;		
+			this.children = children;
+			this.checkBoxValues = defaultCheckedValues;
 			inflater = LayoutInflater.from(context);
 		}
 
@@ -68,6 +54,18 @@ public class CheckableFileExpandableList extends BaseExpandableListAdapter{
 			// TODO Auto-generated method stub
 			return 0;
 		}
+		
+
+		public Boolean getStatus(int arg0, int arg1) {
+			return checkBoxValues.get(arg0).get(arg1);	
+		}
+		
+		public void changeStatus(int arg0, int arg1) {
+			Boolean curr = checkBoxValues.get(arg0).get(arg1);	
+			ArrayList<Boolean> temp=checkBoxValues.get(arg0);
+			temp.set(arg1, !curr);
+			checkBoxValues.set(arg0,temp);
+		}
 
 		@Override
 		public View getChildView(final int arg0, final int arg1, boolean arg2, View arg3,
@@ -78,19 +76,30 @@ public class CheckableFileExpandableList extends BaseExpandableListAdapter{
 				t=arg3;
 			else
 				t=inflater.inflate(R.layout.checkable_row,arg4,false);
-			CheckableFile c = (CheckableFile)getChild(arg0,arg1);
+			//CheckableFile c = (File)getChild(arg0,arg1);
 			TextView fileName = (TextView)t.findViewById(R.id.label);
 			if(fileName!=null)
 			{
 			fileName.setPadding(100, 0, 0, 0);
 			fileName.setTextSize(20);
 				//View File
-			fileName.setText((CharSequence) ((CheckableFile)getChild(arg0,arg1)).getFile().getName());
+			fileName.setText((CharSequence) ((File)getChild(arg0,arg1)).getName());
 			}
 			CheckBox cb = (CheckBox)t.findViewById( R.id.checkBox1 );
-		    cb.setChecked( c.getState() );
+			cb.setChecked(getStatus(arg0,arg1));
+			cb.setOnClickListener(new OnClickListener(){
+				@Override
+				public void onClick(View v) {
+					changeStatus(arg0,arg1);
+					// TODO Auto-generated method stub
+//					Toast.makeText(context, Integer.toString(checkBoxValues.get(arg0).size()), Toast.LENGTH_SHORT).show();
+				}
+				
+			});
+		    //cb.setChecked( c.getState() );
 			return t;}
-
+		
+		
 		@Override
 		public int getChildrenCount(int arg0) {
 			// TODO Auto-generated method stub

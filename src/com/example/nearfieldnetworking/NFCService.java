@@ -26,6 +26,7 @@ public class NFCService {
 	private ConnectThread mConnectThread;
 	private ConnectedThread mConnectedThread;
 	private int mState;
+	private int totalBytes = Integer.MAX_VALUE;
 	// private AsyncTask fileWrite;
 
 	// Constants that indicate the current connection state
@@ -44,6 +45,12 @@ public class NFCService {
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		mFileHandler = handler;
 
+	}
+	
+	public void setSize(int size)
+	{
+		totalBytes = size;
+		Log.d("size",Integer.toString(totalBytes));
 	}
 
 	private synchronized void setState(int state) {
@@ -398,6 +405,8 @@ public class NFCService {
 					// Log.d("string", new String(buffer));
 
 					pos += bytes;
+					
+				
 
 					// int index = (pos < 1024) ? (1024):(pos);
 
@@ -406,6 +415,11 @@ public class NFCService {
 					// Send the obtained bytes to the UI activity
 					mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, pos,
 							bytes, buffer).sendToTarget();
+					
+					
+					if (pos == totalBytes)
+						pos = 0;
+					
 				} catch (IOException e) {
 					Log.e("debug", "disconnected", e);
                     connectionLost();
@@ -442,21 +456,28 @@ public class NFCService {
 			ConnectedThread r = (ConnectedThread) args[1];
 
 			int totalBytes = bytes.length;
-			// Log.d("totalBytes",Integer.toString(totalBytes));
+			
 			int pos = 0;
 
-			while (pos < totalBytes) {
+			while (pos <= totalBytes) {
 				byte[] tempBuffer = new byte[1024];
-				if (totalBytes - pos < 1024) {
+				
+				if (pos == totalBytes)
+				{
+				}	
+				
+				else if (totalBytes - pos < 1024) {
+					tempBuffer = new byte[totalBytes - pos];
 					System.arraycopy(bytes, pos, tempBuffer, 0, totalBytes
 							- pos);
-					pos += totalBytes - pos;
+					pos += (totalBytes - pos);
 				} else {
 					System.arraycopy(bytes, pos, tempBuffer, 0, 1024);
 					pos += 1024;
 				}
 
-				// Log.d("curPos",Integer.toString(pos));
+				Log.d("totalBytes",Integer.toString(totalBytes));
+				Log.d("curPos",Integer.toString(pos));
 				// Log.d("toString",new String(tempBuffer));
 				// Perform the write unsynchronized
 				r.write(tempBuffer);
@@ -465,8 +486,14 @@ public class NFCService {
 						.obtainMessage(NFCActivity.MESSAGE_UPDATE);
 				Bundle bundle = new Bundle();
 				bundle.putInt(NFCActivity.PROGRESS, pos);
+				//bundle.putString(NFCActivity.PROGRESS, pos);
 				msg.setData(bundle);
 				mFileHandler.sendMessage(msg);
+				
+				if (pos == totalBytes)
+				{
+					pos++;
+				}	
 
 			}
 

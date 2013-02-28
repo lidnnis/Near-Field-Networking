@@ -59,9 +59,9 @@ public class NFCActivity extends FragmentActivity implements
 	public static final int MESSAGE_WRITE = 3;
 	public static final int MESSAGE_DEVICE_NAME = 4;
 	public static final int MESSAGE_TOAST = 5;
-	public static final int MESSAGE_DONE = 6;
-	public static final int MESSAGE_SENT = 7;
-	public static final int MESSAGE_UPDATE = 8;
+	// public static final int MESSAGE_DONE = 6;
+	public static final int MESSAGE_SENT = 6;
+	public static final int MESSAGE_UPDATE = 7;
 
 	// Key names received from the BluetoothChatService Handler
 	public static final String DEVICE_NAME = "device_name";
@@ -365,7 +365,11 @@ public class NFCActivity extends FragmentActivity implements
 
 						}
 					});
+					
+					//filesToSend[0].getPath();
 
+					filesToSend = new Uri[] {Uri.fromFile(new File(Environment.getExternalStorageDirectory()+"/DCIM/Camera/IMG_20121225_130021.jpg")),Uri.fromFile(new File(Environment.getExternalStorageDirectory()+"/DCIM/Camera/IMG_20121226_175015.jpg"))};
+					
 					for (int i = 0; i != filesToSend.length; i++) {
 
 						Toast.makeText(
@@ -377,8 +381,6 @@ public class NFCActivity extends FragmentActivity implements
 
 						mNFCService.writeToFile(readBytes(filesToSend[i]));
 					}
-
-					progressSBar.show();
 
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -448,7 +450,7 @@ public class NFCActivity extends FragmentActivity implements
 				// new String(headerBuf), Toast.LENGTH_SHORT)
 				// .show();
 
-				// Log.d("pos", Integer.toString(pos));
+				Log.d("pos", Integer.toString(pos));
 
 				// Log.d("string", new String(readBuf));
 
@@ -466,8 +468,10 @@ public class NFCActivity extends FragmentActivity implements
 					ByteBuffer wrapped = ByteBuffer.wrap(totalBytes);
 					IntBuffer ib = wrapped.asIntBuffer();
 					totalSize = ib.get(0);
+					
+					mNFCService.setSize(totalSize);
 
-					// Log.d("totalBytes", Integer.toString(totalSize));
+					Log.d("totalBytes", Integer.toString(totalSize));
 
 					File path = Environment.getExternalStorageDirectory();
 					File file = new File(path + "/NFN", recievedFilename);
@@ -487,26 +491,33 @@ public class NFCActivity extends FragmentActivity implements
 
 						// Log.d("debug","hey this is here");
 
-						progressBar = new ProgressDialog(NFCActivity.this);
-						progressBar
-								.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-						progressBar.setTitle("Downloading");
+						if (progressBar == null || !progressBar.isShowing()) {
+							progressBar = new ProgressDialog(NFCActivity.this);
+							progressBar
+									.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+							progressBar.setTitle("Downloading");
+
+							progressBar
+									.setOnCancelListener(new OnCancelListener() {
+										@Override
+										public void onCancel(
+												DialogInterface dialog) {
+											mNFCService.stop();
+											Toast.makeText(
+													getApplicationContext(),
+													"Connection Terminated",
+													Toast.LENGTH_LONG).show();
+											finish();
+
+										}
+									});
+						}
 						progressBar.setMessage("File: " + recievedFilename);
 						progressBar.setMax(totalSize);
 
-						progressBar.setOnCancelListener(new OnCancelListener() {
-							@Override
-							public void onCancel(DialogInterface dialog) {
-								mNFCService.stop();
-								Toast.makeText(getApplicationContext(),
-										"Connection Terminated",
-										Toast.LENGTH_LONG).show();
-								finish();
-
-							}
-						});
-
-						progressBar.show();
+						if (!progressBar.isShowing()) {
+							progressBar.show();
+						}
 
 						// prevSize = pos;
 						flag = true;
@@ -552,12 +563,13 @@ public class NFCActivity extends FragmentActivity implements
 						e.printStackTrace();
 					}
 
-					if (progressBar.isShowing())
-						progressBar.dismiss();
-
 					Toast.makeText(getApplicationContext(),
 							recievedFilename + " succesfully downloaded",
 							Toast.LENGTH_SHORT).show();
+
+					// Reset for next iteration
+					//pos = 0;
+					flag = false;
 
 					// try {
 					// synchronized (this) {
@@ -570,40 +582,54 @@ public class NFCActivity extends FragmentActivity implements
 					//
 					// Log.d("debug", "not right");
 
-					mNFCService.stop();
-					finish();
+					// if (progressBar.isShowing())
+					// progressBar.dismiss();
+					// mNFCService.stop(); //ONLY SHOULD BE DONE AFTER ALL FILES
+					// RECEIVED
+					// finish();
 				}
 
 				break;
-			case MESSAGE_DONE:
-				Toast.makeText(getApplicationContext(),
-						msg.getData().getString(TOAST), Toast.LENGTH_SHORT)
-						.show();
-				mNFCService.stop();
-				finish();
-				break;
+			// case MESSAGE_DONE:
+			// Toast.makeText(getApplicationContext(),
+			// msg.getData().getString(TOAST), Toast.LENGTH_SHORT)
+			// .show();
+			// mNFCService.stop();
+			// finish();
+			// break;
 			case MESSAGE_UPDATE:
 				int progress = msg.getData().getInt(PROGRESS);
 
-				if (progress < totalSize)
-					progressSBar.setProgress(progress);
-				else {
-					progressSBar.dismiss();
+				// if (sendNextFile)
+				// {
+				// progressSBar.setMessage("File: " + fname);
+				// }
 
+				if (progress < totalSize) {
+					progressSBar.setProgress(progress);
+					// sendNextFile = false;
+				} else {
+					progressSBar.setProgress(progress);
+					
 					Toast.makeText(getApplicationContext(),
 							"Files sent succesfully", Toast.LENGTH_SHORT)
 							.show();
 
-					try {
-						synchronized (this) {
-							wait(1000);
-						}
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					mNFCService.stop();
-					finish();
+					//sendNextFile = true;
+
+					// try {
+					// synchronized (this) {
+					// wait(1000);
+					// }
+					// } catch (InterruptedException e) {
+					// // TODO Auto-generated catch block
+					// e.printStackTrace();
+					// }
+
+					// FINISH only if last file
+					// progressSBar.dismiss();
+					// mNFCService.stop();
+					// finish();
 				}
 				break;
 			}
@@ -620,7 +646,7 @@ public class NFCActivity extends FragmentActivity implements
 		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
 
 		String fname = (new File(uri.getPath())).getName();
-		Log.d("debug", fname);
+		Log.d("debug", uri.getPath());
 		progressSBar.setMessage("File: " + fname);
 
 		int headerSize = 1024;
@@ -648,6 +674,9 @@ public class NFCActivity extends FragmentActivity implements
 		ByteBuffer b = ByteBuffer.allocate(4);
 		b.putInt(totalSize);
 		progressSBar.setMax(totalSize);
+
+		if (!progressSBar.isShowing())
+			progressSBar.show();
 
 		// and then we can return your byte array.
 		byte[] bb = byteBuffer.toByteArray();

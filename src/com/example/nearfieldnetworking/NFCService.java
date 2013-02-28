@@ -18,14 +18,15 @@ import android.util.Log;
 
 public class NFCService {
 	private static final String NAME = "NFN";
-	private static UUID MY_UUID = null;
+	private static final UUID MY_UUID = UUID
+			.fromString("e8b7fc40-7735-11e2-bcfd-0800200c9a66");;
 	private BluetoothAdapter mBluetoothAdapter;
 	private Handler mFileHandler;
 	private AcceptThread mAcceptThread;
 	private ConnectThread mConnectThread;
 	private ConnectedThread mConnectedThread;
 	private int mState;
-	//private AsyncTask fileWrite;
+	// private AsyncTask fileWrite;
 
 	// Constants that indicate the current connection state
 	public static final int STATE_NONE = 0; // we're doing nothing
@@ -39,9 +40,25 @@ public class NFCService {
 	public NFCService(Context context, Handler handler) {
 		// Use a temporary object that is later assigned to mmServerSocket,
 		// because mmServerSocket is final
+		mState = STATE_NONE;
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		mFileHandler = handler;
-		MY_UUID = UUID.fromString("e8b7fc40-7735-11e2-bcfd-0800200c9a66");
+
+	}
+
+	private synchronized void setState(int state) {
+		mState = state;
+
+		// Give the new state to the Handler so the UI Activity can update
+		mFileHandler.obtainMessage(NFCActivity.MESSAGE_STATE_CHANGE, state, -1)
+				.sendToTarget();
+	}
+
+	/**
+	 * Return the current connection state.
+	 */
+	public synchronized int getState() {
+		return mState;
 	}
 
 	public synchronized void start() {
@@ -67,7 +84,7 @@ public class NFCService {
 	}
 
 	public synchronized void connect(BluetoothDevice device) {
-		// if (D) Log.d(TAG, "connect to: " + device);
+		// Log.d("debug", "connect to: " + device);
 
 		// Cancel any thread attempting to make a connection
 		if (mState == STATE_CONNECTING) {
@@ -99,7 +116,7 @@ public class NFCService {
 	 */
 	public synchronized void connected(BluetoothSocket socket,
 			BluetoothDevice device) {
-		// if (D) Log.d(TAG, "connected, Socket Type:" + socketType);
+		// Log.d("debug", "connected, Socket Type:");
 
 		// Cancel the thread that completed the connection
 		if (mConnectThread != null) {
@@ -158,74 +175,56 @@ public class NFCService {
 
 		setState(STATE_NONE);
 	}
-	
-	  /**
-     * Indicate that the connection attempt failed and notify the UI Activity.
-     */
-    private void connectionFailed() {
-        // Send a failure message back to the Activity
-        Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_TOAST);
-        Bundle bundle = new Bundle();
-        bundle.putString(NFCActivity.TOAST, "Unable to connect device");
-        msg.setData(bundle);
-        mFileHandler.sendMessage(msg);
 
-        // Start the service over to restart listening mode
-        NFCService.this.start();
-    }
+	/**
+	 * Indicate that the connection attempt failed and notify the UI Activity.
+	 */
+	private void connectionFailed() {
+		// Send a failure message back to the Activity
+		Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_TOAST);
+		Bundle bundle = new Bundle();
+		bundle.putString(NFCActivity.TOAST, "Unable to connect device");
+		msg.setData(bundle);
+		mFileHandler.sendMessage(msg);
 
-    /**
-     * Indicate that the connection was lost and notify the UI Activity.
-     */
-    private void connectionLost() {
-        // Send a failure message back to the Activity
-        Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_TOAST);
-        Bundle bundle = new Bundle();
-        bundle.putString(NFCActivity.TOAST, "Device connection was lost");
-        msg.setData(bundle);
-        mFileHandler.sendMessage(msg);
-
-        // Start the service over to restart listening mode
-        NFCService.this.start();
-    }
-
-
-	public void writeToFile(byte[] bytes) {
-		// Create temporary object
-        ConnectedThread r;
-        // Synchronize a copy of the ConnectedThread
-        synchronized (this) {
-            if (mState != STATE_CONNECTED) return;
-            r = mConnectedThread;
-        }
-        
-        new writeFileTask().execute(bytes,r);
-          
-//        Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_DONE);
-//        Bundle bundle = new Bundle();
-//        bundle.putString(NFCActivity.TOAST, "File Transfer Completed");
-//        msg.setData(bundle);
-//        mFileHandler.sendMessage(msg);
-        
-		//NFCService.this.stop();
-	}
-	
-
-
-
-	private synchronized void setState(int state) {
-		mState = state;
-
-		// Give the new state to the Handler so the UI Activity can update
-		mFileHandler.obtainMessage(NFCActivity.MESSAGE_STATE_CHANGE, state, -1)
-				.sendToTarget();
+		// Start the service over to restart listening mode
+		NFCService.this.start();
 	}
 
 	/**
-	 * Return the current connection state.
+	 * Indicate that the connection was lost and notify the UI Activity.
 	 */
-	public synchronized int getState() {
-		return mState;
+	private void connectionLost() {
+		// Send a failure message back to the Activity
+		Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_TOAST);
+		Bundle bundle = new Bundle();
+		bundle.putString(NFCActivity.TOAST, "Device connection was lost");
+		msg.setData(bundle);
+		mFileHandler.sendMessage(msg);
+
+		// Start the service over to restart listening mode
+		NFCService.this.start();
+	}
+
+	public void writeToFile(byte[] bytes) {
+		// Create temporary object
+		ConnectedThread r;
+		// Synchronize a copy of the ConnectedThread
+		synchronized (this) {
+			if (mState != STATE_CONNECTED)
+				return;
+			r = mConnectedThread;
+		}
+
+		new writeFileTask().execute(bytes, r);
+
+		// Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_DONE);
+		// Bundle bundle = new Bundle();
+		// bundle.putString(NFCActivity.TOAST, "File Transfer Completed");
+		// msg.setData(bundle);
+		// mFileHandler.sendMessage(msg);
+
+		// NFCService.this.stop();
 	}
 
 	public class AcceptThread extends Thread {
@@ -240,9 +239,12 @@ public class NFCService {
 			try {
 				// MY_UUID is the app's UUID string, also used by the client
 				// code
-				tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(
-						NAME, MY_UUID);
-				//tmp = InsecureBluetooth.listenUsingRfcommWithServiceRecord(mBluetoothAdapter, NAME, MY_UUID, true);
+				tmp = mBluetoothAdapter
+						.listenUsingInsecureRfcommWithServiceRecord(NAME,
+								MY_UUID);
+				// tmp =
+				// InsecureBluetooth.listenUsingRfcommWithServiceRecord(mBluetoothAdapter,
+				// NAME, MY_UUID, true);
 			} catch (IOException e) {
 			}
 			mmServerSocket = tmp;
@@ -306,10 +308,12 @@ public class NFCService {
 			try {
 				// MY_UUID is the app's UUID string, also used by the server
 				// code
-				
-				Log.d("debug",MY_UUID.toString());
-				tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
-				//tmp = InsecureBluetooth.createRfcommSocketToServiceRecord(device, MY_UUID, true);
+
+				// Log.d("debug",MY_UUID.toString());
+				tmp = device.createInsecureRfcommSocketToServiceRecord(MY_UUID);
+				// tmp =
+				// InsecureBluetooth.createRfcommSocketToServiceRecord(device,
+				// MY_UUID, true);
 			} catch (IOException e) {
 			}
 			mmSocket = tmp;
@@ -319,32 +323,31 @@ public class NFCService {
 			// Cancel discovery because it will slow down the connection
 			mBluetoothAdapter.cancelDiscovery();
 
-			 // Make a connection to the BluetoothSocket
-            try {
-                // This is a blocking call and will only return on a
-                // successful connection or an exception
-                mmSocket.connect();
-            } catch (IOException e) {
-                // Close the socket
-                try {
-                    mmSocket.close();
-                } catch (IOException e2) {
-                    //Log.e(TAG, "unable to close() " + mSocketType +
-                            //" socket during connection failure", e2);
-                }
-                connectionFailed();
-                return;
-            }
+			// Make a connection to the BluetoothSocket
+			try {
+				// This is a blocking call and will only return on a
+				// successful connection or an exception
+				mmSocket.connect();
+			} catch (IOException e) {
+				// Close the socket
+				try {
+					mmSocket.close();
+				} catch (IOException e2) {
+					// Log.e(TAG, "unable to close() " + mSocketType +
+					// " socket during connection failure", e2);
+				}
+				connectionFailed();
+				return;
+			}
 
-            // Reset the ConnectThread because we're done
-            synchronized (NFCService.this) {
-                mConnectThread = null;
-            }
+			// Reset the ConnectThread because we're done
+			synchronized (NFCService.this) {
+				mConnectThread = null;
+			}
 
-            // Start the connected thread
-            connected(mmSocket, mmDevice);
-        }
-
+			// Start the connected thread
+			connected(mmSocket, mmDevice);
+		}
 
 		/** Will cancel an in-progress connection, and close the socket */
 		public void cancel() {
@@ -378,33 +381,36 @@ public class NFCService {
 		}
 
 		public void run() {
-			//byte[] buffer = new byte[1024];
-			//byte[] fileBuffer = new byte[1024]; // buffer store for the stream
+			// byte[] buffer = new byte[1024];
+			// byte[] fileBuffer = new byte[1024]; // buffer store for the
+			// stream
 			int bytes; // bytes returned from read()
 			int pos = 0;
-			
-			
+
 			// Keep listening to the InputStream until an exception occurs
 			while (true) {
 				try {
 					byte[] buffer = new byte[1024];
 					// Read from the InputStream
 					bytes = mmInStream.read(buffer);
-					//System.arraycopy(buffer,0,fileBuffer,0,bytes);
-					
-					//Log.d("string", new String(buffer));
-					
+					// System.arraycopy(buffer,0,fileBuffer,0,bytes);
+
+					// Log.d("string", new String(buffer));
+
 					pos += bytes;
-					
-					
-					//int index = (pos < 1024) ? (1024):(pos);
-					
-					//byte[] sendBuffer = new byte[pos];
-					//System.arraycopy(fileBuffer,0, sendBuffer,0, pos);
+
+					// int index = (pos < 1024) ? (1024):(pos);
+
+					// byte[] sendBuffer = new byte[pos];
+					// System.arraycopy(fileBuffer,0, sendBuffer,0, pos);
 					// Send the obtained bytes to the UI activity
-					mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, pos, bytes, buffer)
-							.sendToTarget();
+					mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, pos,
+							bytes, buffer).sendToTarget();
 				} catch (IOException e) {
+					Log.e("debug", "disconnected", e);
+                    connectionLost();
+                    // Start the service over to restart listening mode
+                    NFCService.this.start();
 					break;
 				}
 			}
@@ -426,48 +432,45 @@ public class NFCService {
 			}
 		}
 	}
-	
+
 	private class writeFileTask extends AsyncTask<Object, Void, Void> {
 
 		@Override
 		protected Void doInBackground(Object... args) {
-			
-			 byte[] bytes = (byte[])args[0];
-			 ConnectedThread r = (ConnectedThread)args[1];
-			
-			 int totalBytes = bytes.length;
-		        Log.d("totalBytes",Integer.toString(totalBytes));
-		        int pos = 0;
-		         
-		        while (pos < totalBytes)
-		        {
-		        	byte[] tempBuffer = new byte[1024];
-		        	if (totalBytes-pos < 1024)
-		        	{
-		        		System.arraycopy(bytes,pos,tempBuffer,0,totalBytes-pos);
-		        		pos += totalBytes-pos;
-		        	}
-		        	else
-		        	{
-		            	System.arraycopy(bytes,pos,tempBuffer,0,1024);
-		            	pos += 1024; 
-		        	}
-		        	
-		        	Log.d("curPos",Integer.toString(pos));
-		        	//Log.d("toString",new String(tempBuffer));
-		        	// Perform the write unsynchronized
-		        	r.write(tempBuffer);
-		        	
-		        	Message msg = mFileHandler
-		    				.obtainMessage(NFCActivity.MESSAGE_UPDATE);
-		    		Bundle bundle = new Bundle();
-		    		bundle.putInt(NFCActivity.PROGRESS, pos);
-		    		msg.setData(bundle);
-		    		mFileHandler.sendMessage(msg);
-		        	
-		        }
-			
-			
+
+			byte[] bytes = (byte[]) args[0];
+			ConnectedThread r = (ConnectedThread) args[1];
+
+			int totalBytes = bytes.length;
+			// Log.d("totalBytes",Integer.toString(totalBytes));
+			int pos = 0;
+
+			while (pos < totalBytes) {
+				byte[] tempBuffer = new byte[1024];
+				if (totalBytes - pos < 1024) {
+					System.arraycopy(bytes, pos, tempBuffer, 0, totalBytes
+							- pos);
+					pos += totalBytes - pos;
+				} else {
+					System.arraycopy(bytes, pos, tempBuffer, 0, 1024);
+					pos += 1024;
+				}
+
+				// Log.d("curPos",Integer.toString(pos));
+				// Log.d("toString",new String(tempBuffer));
+				// Perform the write unsynchronized
+				r.write(tempBuffer);
+
+				Message msg = mFileHandler
+						.obtainMessage(NFCActivity.MESSAGE_UPDATE);
+				Bundle bundle = new Bundle();
+				bundle.putInt(NFCActivity.PROGRESS, pos);
+				msg.setData(bundle);
+				mFileHandler.sendMessage(msg);
+
+			}
+
 			return null;
-		}}
+		}
+	}
 }

@@ -47,7 +47,7 @@ public class NFCActivity extends FragmentActivity implements
 	private BluetoothDevice bt;
 
 	private Uri[] filesToSend;
-	private DialogFragment newFragment;
+	// private DialogFragment newFragment;
 	TextView mInfoText;
 
 	public static final int REQUEST_ENABLE_BT = 1;
@@ -65,10 +65,10 @@ public class NFCActivity extends FragmentActivity implements
 
 	// Key names received from the BluetoothChatService Handler
 	public static final String DEVICE_NAME = "device_name";
-	public static final String PROGRESS = "device_name";
+	public static final String PROGRESS = "progress";
 	public static final String TOAST = "toast";
 
-	public static final String PREFS_NAME = "NFCPrefsFile";
+	//public static final String PREFS_NAME = "NFCPrefsFile";
 
 	private String recievedFilename;
 	private FileOutputStream fos = null;
@@ -77,6 +77,7 @@ public class NFCActivity extends FragmentActivity implements
 	private boolean flag = false;
 	private ProgressDialog progressBar;
 	private ProgressDialog progressSBar;
+	private ProgressDialog waitBar;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +92,14 @@ public class NFCActivity extends FragmentActivity implements
 		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-		newFragment = new ClientDialog();
+		if (mBluetoothAdapter == null) {
+			Toast.makeText(this, "Bluetooth is not available",
+					Toast.LENGTH_LONG).show();
+			finish();
+			return;
+		}
+
+		// newFragment = new ClientDialog();
 
 		if (mNfcAdapter == null) {
 			mInfoText = (TextView) findViewById(R.id.textView);
@@ -159,8 +167,22 @@ public class NFCActivity extends FragmentActivity implements
 	}
 
 	@Override
+	public synchronized void onPause() {
+		super.onPause();
+		Log.e("debug", "- ON PAUSE -");
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+		Log.e("debug", "-- ON STOP --");
+	}
+
+	@Override
 	public void onResume() {
 		super.onResume();
+
+		Log.e("debug", "+ ON RESUME +");
 
 		if (mNFCService != null) {
 			// Only if the state is STATE_NONE, do we know that we haven't
@@ -176,6 +198,14 @@ public class NFCActivity extends FragmentActivity implements
 			processIntent(getIntent());
 		}
 	}
+	
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Stop the Bluetooth chat services
+        if (mNFCService != null) mNFCService.stop();
+        Log.e("debug", "--- ON DESTROY ---");
+    }
 
 	@Override
 	public void onNewIntent(Intent intent) {
@@ -195,20 +225,48 @@ public class NFCActivity extends FragmentActivity implements
 		String macAddr = new String(msg.getRecords()[0].getPayload());
 
 		// Pair BT Devices
-//		if (!mBluetoothAdapter.getBondedDevices().isEmpty()) {
-			bt = mBluetoothAdapter.getRemoteDevice(macAddr);
-//		} else {
-//			Toast.makeText(getApplicationContext(), "Something went wrong",
-//					Toast.LENGTH_LONG).show();
-//			finish();
-//		}
+		// if (!mBluetoothAdapter.getBondedDevices().isEmpty()) {
+		bt = mBluetoothAdapter.getRemoteDevice(macAddr);
+		// } else {
+		// Toast.makeText(getApplicationContext(), "Something went wrong",
+		// Toast.LENGTH_LONG).show();
+		// finish();
+		// }
 
 		mNFCService.connect(bt);
 
-		newFragment.show(getSupportFragmentManager(), "ClientDialog");
-		getSupportFragmentManager().executePendingTransactions();
+		// try {
+		// synchronized (this) {
+		// wait(5000);
+		// }
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		//
+		// newFragment.show(getSupportFragmentManager(), "ClientDialog");
+		//
+		//
+		// getSupportFragmentManager().executePendingTransactions();
+		//
+		// newFragment.getDialog().setOnCancelListener(new OnCancelListener() {
+		// @Override
+		// public void onCancel(DialogInterface dialog) {
+		// mNFCService.stop();
+		// Toast.makeText(getApplicationContext(),
+		// "Connection Terminated", Toast.LENGTH_LONG).show();
+		// finish();
+		//
+		// }
+		// });
 
-		newFragment.getDialog().setOnCancelListener(new OnCancelListener() {
+		waitBar = new ProgressDialog(NFCActivity.this);
+		waitBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		waitBar.setTitle("Initiating Bluetooth");
+		waitBar.setMessage("Waiting For Data");
+		waitBar.show();
+
+		waitBar.setOnCancelListener(new OnCancelListener() {
 			@Override
 			public void onCancel(DialogInterface dialog) {
 				mNFCService.stop();
@@ -227,6 +285,11 @@ public class NFCActivity extends FragmentActivity implements
 		getMenuInflater().inflate(R.menu.activity_nfc, menu);
 		return true;
 	}
+
+	// @Override
+	// protected void onSaveInstanceState(Bundle outState) {
+	// //No call for super(). Bug on API Level > 11.
+	// }
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -284,19 +347,18 @@ public class NFCActivity extends FragmentActivity implements
 					progressSBar
 							.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 					progressSBar.setTitle("Sending");
-					
-					
+
 					progressSBar.setOnCancelListener(new OnCancelListener() {
 						@Override
 						public void onCancel(DialogInterface dialog) {
 							mNFCService.stop();
 							Toast.makeText(getApplicationContext(),
-									"Connection Terminated", Toast.LENGTH_LONG).show();
+									"Connection Terminated", Toast.LENGTH_LONG)
+									.show();
 							finish();
 
 						}
 					});
-
 
 					mNFCService.writeToFile(readBytes(filesToSend));
 
@@ -341,13 +403,16 @@ public class NFCActivity extends FragmentActivity implements
 				case NFCService.STATE_CONNECTED:
 					// setStatus(getString(R.string.title_connected_to,
 					// mConnectedDeviceName));
+					Log.d("debug", "connected");
 					break;
 				case NFCService.STATE_CONNECTING:
 					// setStatus(R.string.title_connecting);
+					Log.d("debug", "connecting");
 					break;
 				case NFCService.STATE_LISTEN:
 				case NFCService.STATE_NONE:
 					// setStatus(R.string.title_not_connected);
+					Log.d("debug", "closed");
 					break;
 				}
 				break;
@@ -367,7 +432,7 @@ public class NFCActivity extends FragmentActivity implements
 				// new String(headerBuf), Toast.LENGTH_SHORT)
 				// .show();
 
-				Log.d("pos", Integer.toString(pos));
+				// Log.d("pos", Integer.toString(pos));
 
 				// Log.d("string", new String(readBuf));
 
@@ -385,7 +450,7 @@ public class NFCActivity extends FragmentActivity implements
 					IntBuffer ib = wrapped.asIntBuffer();
 					totalSize = ib.get(0);
 
-					Log.d("totalBytes", Integer.toString(totalSize));
+					// Log.d("totalBytes", Integer.toString(totalSize));
 
 					File path = Environment.getExternalStorageDirectory();
 					File file = new File(path + "/NFN", recievedFilename);
@@ -398,10 +463,12 @@ public class NFCActivity extends FragmentActivity implements
 					}
 
 					// Hide original dialog and show progressbar
-					if (newFragment.getDialog() != null) {
-						if (newFragment.getDialog().isShowing()) {
-							newFragment.getDialog().dismiss();
+					if (waitBar != null) {
+						if (waitBar.isShowing()) {
+							waitBar.dismiss();
 						}
+
+						// Log.d("debug","hey this is here");
 
 						progressBar = new ProgressDialog(NFCActivity.this);
 						progressBar
@@ -409,18 +476,19 @@ public class NFCActivity extends FragmentActivity implements
 						progressBar.setTitle("Downloading");
 						progressBar.setMessage("File: " + recievedFilename);
 						progressBar.setMax(totalSize);
-						
+
 						progressBar.setOnCancelListener(new OnCancelListener() {
 							@Override
 							public void onCancel(DialogInterface dialog) {
 								mNFCService.stop();
 								Toast.makeText(getApplicationContext(),
-										"Connection Terminated", Toast.LENGTH_LONG).show();
+										"Connection Terminated",
+										Toast.LENGTH_LONG).show();
 								finish();
 
 							}
 						});
-						
+
 						progressBar.show();
 
 						// prevSize = pos;
@@ -437,7 +505,7 @@ public class NFCActivity extends FragmentActivity implements
 					}
 
 					// else
-					Log.d("size", Integer.toString(msg.arg2));
+					// Log.d("size", Integer.toString(msg.arg2));
 					buffer = new byte[msg.arg2];
 					System.arraycopy(readBuf, 0, buffer, 0, msg.arg2);
 
@@ -473,17 +541,18 @@ public class NFCActivity extends FragmentActivity implements
 					Toast.makeText(getApplicationContext(),
 							recievedFilename + " succesfully downloaded",
 							Toast.LENGTH_SHORT).show();
-					
-//					try {
-//						synchronized (this) {
-//							wait(1000);
-//						}
-//					} catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					
-					
+
+					// try {
+					// synchronized (this) {
+					// wait(1000);
+					// }
+					// } catch (InterruptedException e) {
+					// // TODO Auto-generated catch block
+					// e.printStackTrace();
+					// }
+					//
+					// Log.d("debug", "not right");
+
 					mNFCService.stop();
 					finish();
 				}
@@ -504,8 +573,9 @@ public class NFCActivity extends FragmentActivity implements
 				else {
 					progressSBar.dismiss();
 
-					Toast.makeText(getApplicationContext(), "Files sent succesfully",
-							Toast.LENGTH_SHORT).show();
+					Toast.makeText(getApplicationContext(),
+							"Files sent succesfully", Toast.LENGTH_SHORT)
+							.show();
 
 					try {
 						synchronized (this) {

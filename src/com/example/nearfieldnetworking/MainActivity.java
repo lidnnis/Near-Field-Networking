@@ -2,18 +2,12 @@ package com.example.nearfieldnetworking;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
-
 
 import android.app.Activity;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -134,7 +128,7 @@ public class MainActivity extends Activity {
 		mBuilder.setContentIntent(PendingIntent.getActivity(this,0,resultIntent,0));
 		mBuilder.setAutoCancel(true);
 		NotificationManager mNotificationManager =
-		    (NotificationManager) getSystemService(this.NOTIFICATION_SERVICE);
+		    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(13, mBuilder.build());
 	}

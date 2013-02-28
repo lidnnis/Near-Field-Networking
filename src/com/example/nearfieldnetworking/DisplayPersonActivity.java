@@ -4,36 +4,24 @@ package com.example.nearfieldnetworking;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 
-
-import android.os.Bundle;
-import android.os.Environment;
-import android.app.Activity;
+import android.app.ActionBar;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.app.ActionBar;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 
 /********************************************************
  *  DisplayPersonActivity

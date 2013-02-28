@@ -2,15 +2,13 @@ package com.example.nearfieldnetworking;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.support.v4.app.DialogFragment;
-import android.widget.ExpandableListView;
-import android.widget.Toast;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.widget.ExpandableListView;
 
 public class FileSelectDialog extends DialogFragment {
 	private String path;

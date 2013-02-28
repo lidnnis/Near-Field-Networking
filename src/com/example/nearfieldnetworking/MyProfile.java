@@ -4,24 +4,19 @@ package com.example.nearfieldnetworking;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import android.os.Bundle;
-import android.os.Environment;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
-import android.view.Menu;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.app.ActionBar;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 
 public class MyProfile extends Activity {
 

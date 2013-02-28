@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 
 import android.app.ActionBar;
 import android.app.ProgressDialog;
@@ -29,7 +30,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.provider.Settings;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -68,8 +68,9 @@ public class NFCActivity extends FragmentActivity implements
 	public static final String PROGRESS = "progress";
 	public static final String TOAST = "toast";
 
-	//public static final String PREFS_NAME = "NFCPrefsFile";
+	// public static final String PREFS_NAME = "NFCPrefsFile";
 
+	private String recievedFilepath;
 	private String recievedFilename;
 	private FileOutputStream fos = null;
 	private int totalSize;
@@ -198,14 +199,15 @@ public class NFCActivity extends FragmentActivity implements
 			processIntent(getIntent());
 		}
 	}
-	
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        // Stop the Bluetooth chat services
-        if (mNFCService != null) mNFCService.stop();
-        Log.e("debug", "--- ON DESTROY ---");
-    }
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		// Stop the Bluetooth chat services
+		if (mNFCService != null)
+			mNFCService.stop();
+		Log.e("debug", "--- ON DESTROY ---");
+	}
 
 	@Override
 	public void onNewIntent(Intent intent) {
@@ -262,7 +264,7 @@ public class NFCActivity extends FragmentActivity implements
 
 		waitBar = new ProgressDialog(NFCActivity.this);
 		waitBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		waitBar.setTitle("Initiating Bluetooth");
+		waitBar.setTitle("Initiating Transfer");
 		waitBar.setMessage("Waiting For Data");
 		waitBar.show();
 
@@ -337,9 +339,13 @@ public class NFCActivity extends FragmentActivity implements
 				// String filePath = cursor.getString(columnIndex);
 				// cursor.close();
 
-				Toast.makeText(getApplicationContext(),
-						"Sending " + filesToSend[0].getPath(),
-						Toast.LENGTH_LONG).show();
+				// ArrayList<Parcelable> list =
+				// intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+				// for (Parcelable p : list) {
+				// Uri uri = (Uri) p;
+				// Log.d("debug",uri.toString());
+				// /// do something with it.
+				// }
 
 				try {
 
@@ -360,7 +366,17 @@ public class NFCActivity extends FragmentActivity implements
 						}
 					});
 
-					mNFCService.writeToFile(readBytes(filesToSend));
+					for (int i = 0; i != filesToSend.length; i++) {
+
+						Toast.makeText(
+								getApplicationContext(),
+								"Sending "
+										+ new File(filesToSend[i].getPath())
+												.getName(), Toast.LENGTH_LONG)
+								.show();
+
+						mNFCService.writeToFile(readBytes(filesToSend[i]));
+					}
 
 					progressSBar.show();
 
@@ -441,7 +457,8 @@ public class NFCActivity extends FragmentActivity implements
 
 					// get filename
 					System.arraycopy(readBuf, 0, buffer, 0, 512);
-					recievedFilename = new String(buffer).trim();
+					recievedFilepath = new String(buffer).trim();
+					recievedFilename = new File(recievedFilepath).getName();
 
 					// get totalsize
 					System.arraycopy(readBuf, 511, totalBytes, 0, 512);
@@ -594,19 +611,23 @@ public class NFCActivity extends FragmentActivity implements
 	};
 
 	// converts file to bytes
-	public byte[] readBytes(Uri[] uri) throws IOException {
+	public byte[] readBytes(Uri uri) throws IOException {
 		// this dynamically extends to take the bytes you read
-		InputStream inputStream = getContentResolver().openInputStream(uri[0]);
+
+		// for ()
+
+		InputStream inputStream = getContentResolver().openInputStream(uri);
 		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
 
-		String fname = new File(uri[0].getPath()).getName();
+		String fname = (new File(uri.getPath())).getName();
+		Log.d("debug", fname);
 		progressSBar.setMessage("File: " + fname);
 
 		int headerSize = 1024;
 		byte[] headerBuffer = new byte[headerSize];
 
-		System.arraycopy(fname.getBytes(), 0, headerBuffer, 0,
-				fname.getBytes().length);
+		System.arraycopy(uri.getPath().getBytes(), 0, headerBuffer, 0, uri
+				.getPath().getBytes().length);
 		byteBuffer.write(headerBuffer);
 
 		// this is storage overwritten on each iteration with bytes

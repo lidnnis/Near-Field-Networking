@@ -67,6 +67,7 @@ public class NFCActivity extends FragmentActivity implements
 	public static final String DEVICE_NAME = "device_name";
 	public static final String PROGRESS = "progress";
 	public static final String TOTAL = "total";
+	public static final String NUM_LEFT = "num_left";
 	public static final String FNAME = "fname";
 	public static final String TOAST = "toast";
 
@@ -76,7 +77,7 @@ public class NFCActivity extends FragmentActivity implements
 	private String recievedFilename;
 	private FileOutputStream fos = null;
 	private int totalSize;
-	// private int prevSize = 0;
+	private int numFilesLeft;
 	private boolean flag = false;
 	private ProgressDialog progressBar;
 	private ProgressDialog progressSBar;
@@ -388,8 +389,11 @@ public class NFCActivity extends FragmentActivity implements
 						// .getName(), Toast.LENGTH_LONG)
 						// .show();
 
-						mNFCService.writeToFile(readBytes(filesToSend[i]),
-								new File(filesToSend[i].getPath()).getName());
+						int num = filesToSend.length - i - 1;
+
+						mNFCService.writeToFile(readBytes(filesToSend[i], num),
+								new File(filesToSend[i].getPath()).getName(),
+								num);
 					}
 
 				} catch (IOException e) {
@@ -452,7 +456,8 @@ public class NFCActivity extends FragmentActivity implements
 
 				byte[] buffer = new byte[990];
 
-				byte[] totalBytes = new byte[512];
+				byte[] totalBytes = new byte[4];
+				byte[] filesLeft = new byte[4];
 
 				// Log.d("totalBytes",Integer.toString(wrapped.getInt()));
 
@@ -473,11 +478,18 @@ public class NFCActivity extends FragmentActivity implements
 					recievedFilename = new File(recievedFilepath).getName();
 
 					// get totalsize
-					System.arraycopy(readBuf, 511, totalBytes, 0, 478);
+					System.arraycopy(readBuf, 511, totalBytes, 0, 4);
+
+					// get files left count
+					System.arraycopy(readBuf, 600, filesLeft, 0, 4);
 
 					ByteBuffer wrapped = ByteBuffer.wrap(totalBytes);
 					IntBuffer ib = wrapped.asIntBuffer();
 					totalSize = ib.get(0);
+
+					wrapped = ByteBuffer.wrap(filesLeft);
+					ib = wrapped.asIntBuffer();
+					numFilesLeft = ib.get(0);
 
 					mNFCService.setSize(totalSize);
 
@@ -583,22 +595,21 @@ public class NFCActivity extends FragmentActivity implements
 					// pos = 0;
 					flag = false;
 
-					// try {
-					// synchronized (this) {
-					// wait(1000);
-					// }
-					// } catch (InterruptedException e) {
-					// // TODO Auto-generated catch block
-					// e.printStackTrace();
-					// }
-					//
-					// Log.d("debug", "not right");
+					if (numFilesLeft == 0) {
+						try {
+							synchronized (this) {
+								wait(1000);
+							}
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 
-					// if (progressBar.isShowing())
-					// progressBar.dismiss();
-					// mNFCService.stop(); //ONLY SHOULD BE DONE AFTER ALL FILES
-					// RECEIVED
-					// finish();
+						if (progressBar.isShowing())
+							progressBar.dismiss();
+						mNFCService.stop();
+						finish();
+					}
 				}
 
 				break;
@@ -612,6 +623,7 @@ public class NFCActivity extends FragmentActivity implements
 			case MESSAGE_UPDATE:
 				int progress = msg.getData().getInt(PROGRESS);
 				int total = msg.getData().getInt(TOTAL);
+				int numLeft = msg.getData().getInt(NUM_LEFT);
 				String fname = msg.getData().getString(FNAME);
 
 				// if (sendNextFile)
@@ -632,24 +644,25 @@ public class NFCActivity extends FragmentActivity implements
 					progressSBar.setProgress(progress);
 
 					Toast.makeText(getApplicationContext(),
-							"Files sent succesfully", Toast.LENGTH_SHORT)
+							fname + " sent succesfully", Toast.LENGTH_SHORT)
 							.show();
 
 					// sendNextFile = true;
 
-					// try {
-					// synchronized (this) {
-					// wait(1000);
-					// }
-					// } catch (InterruptedException e) {
-					// // TODO Auto-generated catch block
-					// e.printStackTrace();
-					// }
+					if (numLeft == 0) {
+						try {
+							synchronized (this) {
+								wait(1000);
+							}
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 
-					// FINISH only if last file
-					// progressSBar.dismiss();
-					// mNFCService.stop();
-					// finish();
+						progressSBar.dismiss();
+						mNFCService.stop();
+						finish();
+					}
 				}
 				break;
 			}
@@ -657,7 +670,7 @@ public class NFCActivity extends FragmentActivity implements
 	};
 
 	// converts file to bytes
-	public byte[] readBytes(Uri uri) throws IOException {
+	public byte[] readBytes(Uri uri, int filesLeft) throws IOException {
 		// this dynamically extends to take the bytes you read
 
 		// for ()
@@ -691,23 +704,30 @@ public class NFCActivity extends FragmentActivity implements
 		}
 
 		totalSize += (990 - (totalSize % 990));
-		
+
 		ByteBuffer b = ByteBuffer.allocate(4);
 		b.putInt(totalSize);
 
+		// numFilesLeft = filesLeft;
+		ByteBuffer f = ByteBuffer.allocate(4);
+		f.putInt(filesLeft);
+
 		// and then we can return your byte array.
 		byte[] temp = byteBuffer.toByteArray();
-		
+
 		int extra = 990 - (temp.length % 990);
-		
+
 		byte[] bb = new byte[temp.length + extra];
-		
-		System.arraycopy(temp,0,bb,0,temp.length);
+
+		System.arraycopy(temp, 0, bb, 0, temp.length);
 
 		// Log.d("sender", totalBytes.toString());
 
 		// Add total number of bytes to header
 		System.arraycopy(b.array(), 0, bb, 511, b.array().length);
+
+		// Add files left to header
+		System.arraycopy(f.array(), 0, bb, 600, f.array().length);
 
 		// byte[] tB = new byte[512];
 		// System.arraycopy(bb,511,tB,0,512);

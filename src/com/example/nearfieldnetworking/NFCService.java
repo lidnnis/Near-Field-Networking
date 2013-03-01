@@ -212,7 +212,7 @@ public class NFCService {
 		NFCService.this.start();
 	}
 
-	public void writeToFile(byte[] bytes, String filename) {
+	public void writeToFile(byte[] bytes, String filename, int numLeft) {
 		// Create temporary object
 		ConnectedThread r;
 		// Synchronize a copy of the ConnectedThread
@@ -222,7 +222,7 @@ public class NFCService {
 			r = mConnectedThread;
 		}
 
-		new writeFileTask().execute(bytes, r, filename);
+		new writeFileTask().execute(bytes, r, filename, numLeft);
 
 		// Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_DONE);
 		// Bundle bundle = new Bundle();
@@ -459,6 +459,7 @@ public class NFCService {
 			byte[] bytes = (byte[]) args[0];
 			ConnectedThread r = (ConnectedThread) args[1];
 			String filename = (String) args[2];
+			int numLeft = (Integer) args[3];
 
 			int totalBytes = bytes.length;
 
@@ -491,6 +492,7 @@ public class NFCService {
 				Bundle bundle = new Bundle();
 				bundle.putInt(NFCActivity.PROGRESS, pos);
 				bundle.putInt(NFCActivity.TOTAL, totalBytes);
+				bundle.putInt(NFCActivity.NUM_LEFT, numLeft);
 				bundle.putString(NFCActivity.FNAME, filename);
 				// bundle.putString(NFCActivity.PROGRESS, pos);
 				msg.setData(bundle);

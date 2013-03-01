@@ -46,11 +46,10 @@ public class NFCService {
 		mFileHandler = handler;
 
 	}
-	
-	public void setSize(int size)
-	{
+
+	public void setSize(int size) {
 		totalBytes = size;
-		Log.d("size",Integer.toString(totalBytes));
+		// Log.d("size",Integer.toString(totalBytes));
 	}
 
 	private synchronized void setState(int state) {
@@ -213,7 +212,7 @@ public class NFCService {
 		NFCService.this.start();
 	}
 
-	public void writeToFile(byte[] bytes) {
+	public void writeToFile(byte[] bytes, String filename) {
 		// Create temporary object
 		ConnectedThread r;
 		// Synchronize a copy of the ConnectedThread
@@ -223,7 +222,7 @@ public class NFCService {
 			r = mConnectedThread;
 		}
 
-		new writeFileTask().execute(bytes, r);
+		new writeFileTask().execute(bytes, r, filename);
 
 		// Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_DONE);
 		// Bundle bundle = new Bundle();
@@ -397,34 +396,39 @@ public class NFCService {
 			// Keep listening to the InputStream until an exception occurs
 			while (true) {
 				try {
-					byte[] buffer = new byte[1024];
+					byte[] buffer = new byte[990];
 					// Read from the InputStream
 					bytes = mmInStream.read(buffer);
 					// System.arraycopy(buffer,0,fileBuffer,0,bytes);
 
-					// Log.d("string", new String(buffer));
-
 					pos += bytes;
-					
-				
 
-					// int index = (pos < 1024) ? (1024):(pos);
-
-					// byte[] sendBuffer = new byte[pos];
-					// System.arraycopy(fileBuffer,0, sendBuffer,0, pos);
-					// Send the obtained bytes to the UI activity
+					// byte[] temp;
+					// if (totalBytes - pos < 1024)
+					// {
+					// temp = new byte[totalBytes - pos];
+					// System.arraycopy(buffer,0,temp,0,totalBytes - pos);
+					//
+					// mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, pos,
+					// bytes, temp).sendToTarget();
+					// }
+					//
+					// // Log.d("string", new String(buffer));
+					//
+					// else
+					// {
 					mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, pos,
 							bytes, buffer).sendToTarget();
-					
-					
-					if (pos == totalBytes)
+					// }
+
+					if (pos >= totalBytes)
 						pos = 0;
-					
+
 				} catch (IOException e) {
 					Log.e("debug", "disconnected", e);
-                    connectionLost();
-                    // Start the service over to restart listening mode
-                    NFCService.this.start();
+					connectionLost();
+					// Start the service over to restart listening mode
+					NFCService.this.start();
 					break;
 				}
 			}
@@ -454,30 +458,30 @@ public class NFCService {
 
 			byte[] bytes = (byte[]) args[0];
 			ConnectedThread r = (ConnectedThread) args[1];
+			String filename = (String) args[2];
 
 			int totalBytes = bytes.length;
-			
+
 			int pos = 0;
 
 			while (pos <= totalBytes) {
-				byte[] tempBuffer = new byte[1024];
-				
-				if (pos == totalBytes)
-				{
-				}	
-				
-				else if (totalBytes - pos < 1024) {
+				byte[] tempBuffer = new byte[990];
+
+				if (pos == totalBytes) {
+				}
+
+				else if (totalBytes - pos < 990) {
 					tempBuffer = new byte[totalBytes - pos];
 					System.arraycopy(bytes, pos, tempBuffer, 0, totalBytes
 							- pos);
 					pos += (totalBytes - pos);
 				} else {
-					System.arraycopy(bytes, pos, tempBuffer, 0, 1024);
-					pos += 1024;
+					System.arraycopy(bytes, pos, tempBuffer, 0, 990);
+					pos += 990;
 				}
 
-				Log.d("totalBytes",Integer.toString(totalBytes));
-				Log.d("curPos",Integer.toString(pos));
+				Log.d("totalBytes", Integer.toString(totalBytes));
+				Log.d("curPos", Integer.toString(pos));
 				// Log.d("toString",new String(tempBuffer));
 				// Perform the write unsynchronized
 				r.write(tempBuffer);
@@ -486,17 +490,19 @@ public class NFCService {
 						.obtainMessage(NFCActivity.MESSAGE_UPDATE);
 				Bundle bundle = new Bundle();
 				bundle.putInt(NFCActivity.PROGRESS, pos);
-				//bundle.putString(NFCActivity.PROGRESS, pos);
+				bundle.putInt(NFCActivity.TOTAL, totalBytes);
+				bundle.putString(NFCActivity.FNAME, filename);
+				// bundle.putString(NFCActivity.PROGRESS, pos);
 				msg.setData(bundle);
 				mFileHandler.sendMessage(msg);
-				
-				if (pos == totalBytes)
-				{
+
+				if (pos == totalBytes) {
 					pos++;
-				}	
+				}
 
 			}
 
+			Log.d("end", "File sent");
 			return null;
 		}
 	}

@@ -66,6 +66,8 @@ public class NFCActivity extends FragmentActivity implements
 	// Key names received from the BluetoothChatService Handler
 	public static final String DEVICE_NAME = "device_name";
 	public static final String PROGRESS = "progress";
+	public static final String TOTAL = "total";
+	public static final String FNAME = "fname";
 	public static final String TOAST = "toast";
 
 	// public static final String PREFS_NAME = "NFCPrefsFile";
@@ -365,21 +367,29 @@ public class NFCActivity extends FragmentActivity implements
 
 						}
 					});
-					
-					//filesToSend[0].getPath();
 
-					filesToSend = new Uri[] {Uri.fromFile(new File(Environment.getExternalStorageDirectory()+"/DCIM/Camera/IMG_20121225_130021.jpg")),Uri.fromFile(new File(Environment.getExternalStorageDirectory()+"/DCIM/Camera/IMG_20121226_175015.jpg"))};
-					
+					// filesToSend[0].getPath();
+
+					filesToSend = new Uri[] {
+							Uri.fromFile(new File(Environment
+									.getExternalStorageDirectory()
+									+ "/DCIM/Camera/IMG_20121225_125939.jpg"))// };
+							,
+							Uri.fromFile(new File(Environment
+									.getExternalStorageDirectory()
+									+ "/DCIM/Camera/IMG_20121225_125943.jpg")) };
+
 					for (int i = 0; i != filesToSend.length; i++) {
 
-						Toast.makeText(
-								getApplicationContext(),
-								"Sending "
-										+ new File(filesToSend[i].getPath())
-												.getName(), Toast.LENGTH_LONG)
-								.show();
+						// Toast.makeText(
+						// getApplicationContext(),
+						// "Sending "
+						// + new File(filesToSend[i].getPath())
+						// .getName(), Toast.LENGTH_LONG)
+						// .show();
 
-						mNFCService.writeToFile(readBytes(filesToSend[i]));
+						mNFCService.writeToFile(readBytes(filesToSend[i]),
+								new File(filesToSend[i].getPath()).getName());
 					}
 
 				} catch (IOException e) {
@@ -440,7 +450,7 @@ public class NFCActivity extends FragmentActivity implements
 				int pos = msg.arg1;
 				// construct a string from the valid bytes in the buffer
 
-				byte[] buffer = new byte[1024];
+				byte[] buffer = new byte[990];
 
 				byte[] totalBytes = new byte[512];
 
@@ -452,7 +462,7 @@ public class NFCActivity extends FragmentActivity implements
 
 				Log.d("pos", Integer.toString(pos));
 
-				// Log.d("string", new String(readBuf));
+				Log.d("string", new String(readBuf));
 
 				// Array.Resize(readBuf, 5);
 				if (pos <= 1024 && !flag) {
@@ -463,12 +473,12 @@ public class NFCActivity extends FragmentActivity implements
 					recievedFilename = new File(recievedFilepath).getName();
 
 					// get totalsize
-					System.arraycopy(readBuf, 511, totalBytes, 0, 512);
+					System.arraycopy(readBuf, 511, totalBytes, 0, 478);
 
 					ByteBuffer wrapped = ByteBuffer.wrap(totalBytes);
 					IntBuffer ib = wrapped.asIntBuffer();
 					totalSize = ib.get(0);
-					
+
 					mNFCService.setSize(totalSize);
 
 					Log.d("totalBytes", Integer.toString(totalSize));
@@ -525,17 +535,19 @@ public class NFCActivity extends FragmentActivity implements
 					}
 				}
 
-				else if (pos > 1024) {
+				else if (pos > 909) {
 
 					if (pos - totalSize > 0) {
 						buffer = new byte[pos - totalSize];
 						System.arraycopy(readBuf, 0, buffer, 0, pos - totalSize);
 					}
 
-					// else
+					else
 					// Log.d("size", Integer.toString(msg.arg2));
-					buffer = new byte[msg.arg2];
-					System.arraycopy(readBuf, 0, buffer, 0, msg.arg2);
+					{
+						buffer = new byte[msg.arg2];
+						System.arraycopy(readBuf, 0, buffer, 0, msg.arg2);
+					}
 
 					progressBar.setProgress(pos);
 					// prevSize = pos;
@@ -568,7 +580,7 @@ public class NFCActivity extends FragmentActivity implements
 							Toast.LENGTH_SHORT).show();
 
 					// Reset for next iteration
-					//pos = 0;
+					// pos = 0;
 					flag = false;
 
 					// try {
@@ -599,23 +611,31 @@ public class NFCActivity extends FragmentActivity implements
 			// break;
 			case MESSAGE_UPDATE:
 				int progress = msg.getData().getInt(PROGRESS);
+				int total = msg.getData().getInt(TOTAL);
+				String fname = msg.getData().getString(FNAME);
 
 				// if (sendNextFile)
 				// {
 				// progressSBar.setMessage("File: " + fname);
 				// }
 
-				if (progress < totalSize) {
+				progressSBar.setMessage("File: " + fname);
+				progressSBar.setMax(total);
+
+				if (!progressSBar.isShowing())
+					progressSBar.show();
+
+				if (progress < total) {
 					progressSBar.setProgress(progress);
 					// sendNextFile = false;
 				} else {
 					progressSBar.setProgress(progress);
-					
+
 					Toast.makeText(getApplicationContext(),
 							"Files sent succesfully", Toast.LENGTH_SHORT)
 							.show();
 
-					//sendNextFile = true;
+					// sendNextFile = true;
 
 					// try {
 					// synchronized (this) {
@@ -645,11 +665,10 @@ public class NFCActivity extends FragmentActivity implements
 		InputStream inputStream = getContentResolver().openInputStream(uri);
 		ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
 
-		String fname = (new File(uri.getPath())).getName();
+		// String fname = (new File(uri.getPath())).getName();
 		Log.d("debug", uri.getPath());
-		progressSBar.setMessage("File: " + fname);
 
-		int headerSize = 1024;
+		int headerSize = 990;
 		byte[] headerBuffer = new byte[headerSize];
 
 		System.arraycopy(uri.getPath().getBytes(), 0, headerBuffer, 0, uri
@@ -657,29 +676,33 @@ public class NFCActivity extends FragmentActivity implements
 		byteBuffer.write(headerBuffer);
 
 		// this is storage overwritten on each iteration with bytes
-		int bufferSize = 1024;
+		int bufferSize = 990;
 		byte[] buffer = new byte[bufferSize];
 
 		// we need to know how may bytes were read to write them to the
 		// byteBuffer
 
 		int len = 0;
-		totalSize = 1024;
+		totalSize = 990;
 		while ((len = inputStream.read(buffer)) != -1) {
 			totalSize += len;
 			byteBuffer.write(buffer, 0, len);
 			byteBuffer.flush();
 		}
 
+		totalSize += (990 - (totalSize % 990));
+		
 		ByteBuffer b = ByteBuffer.allocate(4);
 		b.putInt(totalSize);
-		progressSBar.setMax(totalSize);
-
-		if (!progressSBar.isShowing())
-			progressSBar.show();
 
 		// and then we can return your byte array.
-		byte[] bb = byteBuffer.toByteArray();
+		byte[] temp = byteBuffer.toByteArray();
+		
+		int extra = 990 - (temp.length % 990);
+		
+		byte[] bb = new byte[temp.length + extra];
+		
+		System.arraycopy(temp,0,bb,0,temp.length);
 
 		// Log.d("sender", totalBytes.toString());
 

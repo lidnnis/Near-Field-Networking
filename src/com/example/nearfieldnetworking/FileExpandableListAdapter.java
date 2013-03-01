@@ -4,12 +4,15 @@ import java.io.File;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
@@ -109,7 +112,7 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 					public boolean onLongClick(View v) {
 						Toast.makeText(context, "Long Click Detected", Toast.LENGTH_SHORT).show();
 						AlertDialog diaBox = AskOption((CharSequence) ((File) getChild(arg0,arg1)).getName(), ((File) getChild(arg0,arg1)).getPath());
-				        	diaBox.sho
+				        	diaBox.show();
 						return false;
 					}
 				});

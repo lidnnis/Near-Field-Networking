@@ -13,7 +13,7 @@
                 android:title="@string/phone_bt_settings"/>
         </menu>
     </item>
-    <item
+<!--     <item
         android:id="@+id/menu_nfc_settings"
         android:showAsAction="never"
         android:title="@string/menu_nfc_settings"/>
@@ -21,6 +21,6 @@
         android:id="@+id/menu_settings"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/menu_settings"/>
+        android:title="@string/menu_settings"/> -->
 
 </menu>

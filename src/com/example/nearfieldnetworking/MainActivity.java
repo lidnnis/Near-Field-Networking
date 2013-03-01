@@ -99,19 +99,19 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 	    // Handle item selection
 	    switch (item.getItemId()) {
-	        case R.id.menu_nfc:
-	            launchNFCActivity();
-	            return true;
+//	        case R.id.menu_nfc:
+//	            launchNFCActivity();
+//	            return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
 	
-	public void launchNFCActivity()
-	{
-		   Intent intent = new Intent(this, NFCActivity.class);
-		   startActivity(intent);
-	}
+//	public void launchNFCActivity()
+//	{
+//		   Intent intent = new Intent(this, NFCActivity.class);
+//		   startActivity(intent);
+//	}
 	
 	//send notification
 	public void sendBasicNotification(String title,String message) {

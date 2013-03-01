@@ -56,7 +56,7 @@ public class NFCService {
 		mState = state;
 
 		// Give the new state to the Handler so the UI Activity can update
-		mFileHandler.obtainMessage(NFCActivity.MESSAGE_STATE_CHANGE, state, -1)
+		mFileHandler.obtainMessage(DisplayPersonActivity.MESSAGE_STATE_CHANGE, state, -1)
 				.sendToTarget();
 	}
 
@@ -149,9 +149,9 @@ public class NFCService {
 
 		// Send the name of the connected device back to the UI Activity
 		Message msg = mFileHandler
-				.obtainMessage(NFCActivity.MESSAGE_DEVICE_NAME);
+				.obtainMessage(DisplayPersonActivity.MESSAGE_DEVICE_NAME);
 		Bundle bundle = new Bundle();
-		bundle.putString(NFCActivity.DEVICE_NAME, device.getName());
+		bundle.putString(DisplayPersonActivity.DEVICE_NAME, device.getName());
 		msg.setData(bundle);
 		mFileHandler.sendMessage(msg);
 
@@ -187,9 +187,9 @@ public class NFCService {
 	 */
 	private void connectionFailed() {
 		// Send a failure message back to the Activity
-		Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_TOAST);
+		Message msg = mFileHandler.obtainMessage(DisplayPersonActivity.MESSAGE_TOAST);
 		Bundle bundle = new Bundle();
-		bundle.putString(NFCActivity.TOAST, "Unable to connect device");
+		bundle.putString(DisplayPersonActivity.TOAST, "Unable to connect device");
 		msg.setData(bundle);
 		mFileHandler.sendMessage(msg);
 
@@ -202,9 +202,9 @@ public class NFCService {
 	 */
 	private void connectionLost() {
 		// Send a failure message back to the Activity
-		Message msg = mFileHandler.obtainMessage(NFCActivity.MESSAGE_TOAST);
+		Message msg = mFileHandler.obtainMessage(DisplayPersonActivity.MESSAGE_TOAST);
 		Bundle bundle = new Bundle();
-		bundle.putString(NFCActivity.TOAST, "Device connection was lost");
+		bundle.putString(DisplayPersonActivity.TOAST, "Device connection was lost");
 		msg.setData(bundle);
 		mFileHandler.sendMessage(msg);
 
@@ -417,7 +417,7 @@ public class NFCService {
 					//
 					// else
 					// {
-					mFileHandler.obtainMessage(NFCActivity.MESSAGE_READ, pos,
+					mFileHandler.obtainMessage(DisplayPersonActivity.MESSAGE_READ, pos,
 							bytes, buffer).sendToTarget();
 					// }
 
@@ -488,12 +488,12 @@ public class NFCService {
 				r.write(tempBuffer);
 
 				Message msg = mFileHandler
-						.obtainMessage(NFCActivity.MESSAGE_UPDATE);
+						.obtainMessage(DisplayPersonActivity.MESSAGE_UPDATE);
 				Bundle bundle = new Bundle();
-				bundle.putInt(NFCActivity.PROGRESS, pos);
-				bundle.putInt(NFCActivity.TOTAL, totalBytes);
-				bundle.putInt(NFCActivity.NUM_LEFT, numLeft);
-				bundle.putString(NFCActivity.FNAME, filename);
+				bundle.putInt(DisplayPersonActivity.PROGRESS, pos);
+				bundle.putInt(DisplayPersonActivity.TOTAL, totalBytes);
+				bundle.putInt(DisplayPersonActivity.NUM_LEFT, numLeft);
+				bundle.putString(DisplayPersonActivity.FNAME, filename);
 				// bundle.putString(NFCActivity.PROGRESS, pos);
 				msg.setData(bundle);
 				mFileHandler.sendMessage(msg);

@@ -102,6 +102,17 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 						}
 					}
 				});
+				
+				//Delete File on long click
+				t.setOnLongClickListener(new OnLongClickListener() {
+					@Override
+					public boolean onLongClick(View v) {
+						Toast.makeText(context, "Long Click Detected", Toast.LENGTH_SHORT).show();
+						AlertDialog diaBox = AskOption((CharSequence) ((File) getChild(arg0,arg1)).getName(), ((File) getChild(arg0,arg1)).getPath());
+				        	diaBox.sho
+						return false;
+					}
+				});
 			}
 			return t;
 		}
@@ -152,5 +163,49 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 			// TODO Auto-generated method stub
 			return false;
 		}
+		
+		
+	    /*****************************************************************************
+	     * 
+	     * Private function AskOption opens a dialog to confirm delete on long click.
+	     * 
+	    *****************************************************************************/
+	    private AlertDialog AskOption(CharSequence name, final String selectedFilePath)
+	    {
+	       AlertDialog myQuittingDialogBox = new AlertDialog.Builder(context) 
+	           //set message, title, and icon
+	           .setTitle("Delete") 
+	           .setMessage("Are you sure you want to delete " + name + "?") 
+	           //.setIcon(R.drawable.delete)
+	           .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+	               public void onClick(DialogInterface dialog, int whichButton) { 
+	            	   File file = new File(selectedFilePath);
+	            	   //add confirmations about deleting
+	                   boolean deleted = file.delete();
+	                   /*if(deleted == true)
+	                   {
+	             		//DisplayPersonActivity.loadList();
+	                	//Intent reload = new Intent(context, DisplayPersonActivity.class);
+	                  	//context.startActivity(reload);
+	                   }
+	                   else
+	                   	//Error Message
+	                   */
+	                 
+	            	   dialog.dismiss();
+	               }   
+	               
+	           })
+
+	           .setNegativeButton("No", new DialogInterface.OnClickListener() {
+	               public void onClick(DialogInterface dialog, int which) {
+	                   dialog.dismiss();
+	               }
+	           })
+	           
+	           .create();
+	           return myQuittingDialogBox;
+
+	       }
 		
 }

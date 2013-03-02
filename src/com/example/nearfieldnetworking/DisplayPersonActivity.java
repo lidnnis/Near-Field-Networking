@@ -505,11 +505,6 @@ public class DisplayPersonActivity extends FragmentActivity implements
 			intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivityForResult(intent, REQUEST_ENABLE_BT);
 			return true;
-			// case R.id.menu_nfc_settings:
-			// intent = new Intent(Intent.ACTION_GET_CONTENT);
-			// intent.setType("*/*");
-			// startActivityForResult(intent, REQUEST_FILE);
-			// return true;
 		case android.R.id.home:
 			// app icon in action bar clicked; go home
 			intent = new Intent(this, MainActivity.class);
@@ -536,27 +531,11 @@ public class DisplayPersonActivity extends FragmentActivity implements
 			switch (msg.what) {
 
 			case MESSAGE_SENT:
-				// Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-				// intent.setType("*/*");
-				// startActivityForResult(intent, REQUEST_FILE);
-
 				Bundle args = new Bundle();
 				args.putString("passPath", person_path);
 
 				newFragment = new FileSelectDialog();
 				newFragment.setArguments(args);
-//				newFragment.getDialog().setOnCancelListener(
-//						new OnCancelListener() {
-//							@Override
-//							public void onCancel(DialogInterface dialog) {
-//								mNFCService.stop();
-//								Toast.makeText(getApplicationContext(),
-//										"Connection Terminated",
-//										Toast.LENGTH_LONG).show();
-//								finish();
-//
-//							}
-//						});
 
 				newFragment.show(getSupportFragmentManager(), "chooseFiles");
 
@@ -876,17 +855,18 @@ public class DisplayPersonActivity extends FragmentActivity implements
 	public void onDialogPositiveClick(DialogFragment dialog) {
 		// User touched the dialog's positive button
 
-		FileSelectDialog fsd = (FileSelectDialog)(dialog);
-		//fsd.mSelectedItems;
-		
-		//fsd.uris.add(0, Uri.fromFile(new File(person_path + File.separator + ".person")));
-		
+		FileSelectDialog fsd = (FileSelectDialog) (dialog);
+		// fsd.mSelectedItems;
+
+		// fsd.uris.add(0, Uri.fromFile(new File(person_path + File.separator +
+		// ".person")));
+
 		File file = new File(person_path + File.separator + ".profile_pic.jpg");
 		if (file.exists())
 			fsd.uris.add(1, Uri.fromFile(file));
-		
-		filesToSend = (Uri[])fsd.uris.toArray(new Uri[fsd.uris.size()]);
-		//new Uri[] { intent.getData() };
+
+		filesToSend = (Uri[]) fsd.uris.toArray(new Uri[fsd.uris.size()]);
+		// new Uri[] { intent.getData() };
 
 		try {
 

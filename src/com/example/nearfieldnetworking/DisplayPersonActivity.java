@@ -858,12 +858,14 @@ public class DisplayPersonActivity extends FragmentActivity implements
 		FileSelectDialog fsd = (FileSelectDialog) (dialog);
 		// fsd.mSelectedItems;
 
-		// fsd.uris.add(0, Uri.fromFile(new File(person_path + File.separator +
-		// ".person")));
-
 		File file = new File(person_path + File.separator + ".profile_pic.jpg");
 		if (file.exists())
-			fsd.uris.add(1, Uri.fromFile(file));
+			fsd.uris.add(Uri.fromFile(file));
+		
+		 fsd.uris.add(Uri.fromFile(new File(person_path + File.separator +
+		 ".person")));
+
+
 
 		filesToSend = (Uri[]) fsd.uris.toArray(new Uri[fsd.uris.size()]);
 		// new Uri[] { intent.getData() };

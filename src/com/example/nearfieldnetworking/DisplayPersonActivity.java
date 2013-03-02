@@ -12,6 +12,8 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
+import com.example.nearfieldnetworking.FileSelectDialog.NoticeDialogListener;
+
 import android.app.ActionBar;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -53,7 +55,8 @@ import android.widget.Toast;
  * 
  *******************************************************/
 public class DisplayPersonActivity extends FragmentActivity implements
-		CreateNdefMessageCallback, OnNdefPushCompleteCallback {
+		CreateNdefMessageCallback, OnNdefPushCompleteCallback,
+		NoticeDialogListener {
 
 	static final String PROFILE_PIC_FILE_NAME = ".profile_pic.jpg";
 	static final String PERSON_FILE_NAME = ".person";
@@ -115,19 +118,20 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 		// fetch data from intent
 		Bundle extras = getIntent().getExtras();
-		if (extras.equals(null)) {
+		if (!extras.equals(null)) {
 			person_path = extras.getString("person_directory");
 			editable = extras.getBoolean("editable", false);
-			Log.d("debug",person_path);
-		}
-		
-		else 
-		{
-			Log.d("debug","there are no extras");
-			String MAIN_DIR =  Environment.getExternalStorageDirectory() + File.separator + "near_field_networking";
-			String MY_PROFILE_PATH = MAIN_DIR + File.separator + "my_profile";
-			person_path = MY_PROFILE_PATH;
-			editable = false;
+			// Log.d("debug",person_path);
+
+			if (person_path == null) {
+				Log.d("debug", "there are no extras");
+				String MAIN_DIR = Environment.getExternalStorageDirectory()
+						+ File.separator + "near_field_networking";
+				String MY_PROFILE_PATH = MAIN_DIR + File.separator
+						+ "my_profile";
+				person_path = MY_PROFILE_PATH;
+				editable = true;
+			}
 		}
 
 		// make sure person_directory exists
@@ -156,20 +160,20 @@ public class DisplayPersonActivity extends FragmentActivity implements
 		}
 
 		// FAIZAN ADD
-		Button dialog_button = (Button) findViewById(R.id.button2);
-
-		dialog_button.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-
-				Bundle args = new Bundle();
-				args.putString("passPath", person_path);
-
-				newFragment = new FileSelectDialog();
-				newFragment.setArguments(args);
-				newFragment.show(getSupportFragmentManager(), "chooseFiles");
-			}
-		});
-		;
+		// Button dialog_button = (Button) findViewById(R.id.button2);
+		//
+		// dialog_button.setOnClickListener(new View.OnClickListener() {
+		// public void onClick(View v) {
+		//
+		// Bundle args = new Bundle();
+		// args.putString("passPath", person_path);
+		//
+		// newFragment = new FileSelectDialog();
+		// newFragment.setArguments(args);
+		// newFragment.show(getSupportFragmentManager(), "chooseFiles");
+		// }
+		// });
+		// ;
 		// FINISH FAIZAN ADD
 
 		// load image profile image from file
@@ -343,7 +347,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 	}
 
-	////////DENNIS NFC///////////////
+	// //////DENNIS NFC///////////////
 	@Override
 	public void onStart() {
 		super.onStart();
@@ -523,61 +527,6 @@ public class DisplayPersonActivity extends FragmentActivity implements
 		loadPerson();
 		loadList();
 		loadImage();
-
-		if (requestCode == REQUEST_FILE) {
-
-			if (resultCode == RESULT_OK) {
-				filesToSend = new Uri[] { intent.getData() };
-
-				try {
-
-					progressSBar = new ProgressDialog(DisplayPersonActivity.this);
-					progressSBar
-							.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-					progressSBar.setTitle("Sending");
-
-					progressSBar.setOnCancelListener(new OnCancelListener() {
-						@Override
-						public void onCancel(DialogInterface dialog) {
-							mNFCService.stop();
-							Toast.makeText(getApplicationContext(),
-									"Connection Terminated", Toast.LENGTH_LONG)
-									.show();
-							finish();
-
-						}
-					});
-
-					filesToSend = new Uri[] {
-							Uri.fromFile(new File(Environment
-									.getExternalStorageDirectory()
-									+ "/DCIM/Camera/IMG_20121225_125939.jpg"))// };
-							,
-							Uri.fromFile(new File(Environment
-									.getExternalStorageDirectory()
-									+ "/DCIM/Camera/IMG_20121225_125943.jpg")) };
-
-					for (int i = 0; i != filesToSend.length; i++) {
-
-						int num = filesToSend.length - i - 1;
-
-						mNFCService.writeToFile(readBytes(filesToSend[i], num),
-								new File(filesToSend[i].getPath()).getName(),
-								num);
-					}
-
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {
-				mNFCService.stop();
-				Toast.makeText(getApplicationContext(),
-						"Connection Terminated", Toast.LENGTH_LONG).show();
-				finish();
-			}
-
-		}
 	}
 
 	/** This handler receives a message from onNdefPushComplete */
@@ -587,9 +536,30 @@ public class DisplayPersonActivity extends FragmentActivity implements
 			switch (msg.what) {
 
 			case MESSAGE_SENT:
-				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-				intent.setType("*/*");
-				startActivityForResult(intent, REQUEST_FILE);
+				// Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+				// intent.setType("*/*");
+				// startActivityForResult(intent, REQUEST_FILE);
+
+				Bundle args = new Bundle();
+				args.putString("passPath", person_path);
+
+				newFragment = new FileSelectDialog();
+				newFragment.setArguments(args);
+//				newFragment.getDialog().setOnCancelListener(
+//						new OnCancelListener() {
+//							@Override
+//							public void onCancel(DialogInterface dialog) {
+//								mNFCService.stop();
+//								Toast.makeText(getApplicationContext(),
+//										"Connection Terminated",
+//										Toast.LENGTH_LONG).show();
+//								finish();
+//
+//							}
+//						});
+
+				newFragment.show(getSupportFragmentManager(), "chooseFiles");
+
 				break;
 			}
 		}
@@ -637,7 +607,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 				Log.d("pos", Integer.toString(pos));
 
-				//Log.d("string", new String(readBuf));
+				// Log.d("string", new String(readBuf));
 
 				// Array.Resize(readBuf, 5);
 				if (pos <= 1024 && !flag) {
@@ -684,7 +654,8 @@ public class DisplayPersonActivity extends FragmentActivity implements
 						// Log.d("debug","hey this is here");
 
 						if (progressBar == null || !progressBar.isShowing()) {
-							progressBar = new ProgressDialog(DisplayPersonActivity.this);
+							progressBar = new ProgressDialog(
+									DisplayPersonActivity.this);
 							progressBar
 									.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 							progressBar.setTitle("Downloading");
@@ -901,5 +872,63 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 		return bb;
 	}
-	////////////////////
+
+	public void onDialogPositiveClick(DialogFragment dialog) {
+		// User touched the dialog's positive button
+
+		FileSelectDialog fsd = (FileSelectDialog)(dialog);
+		//fsd.mSelectedItems;
+		
+		//fsd.uris.add(0, Uri.fromFile(new File(person_path + File.separator + ".person")));
+		
+		File file = new File(person_path + File.separator + ".profile_pic.jpg");
+		if (file.exists())
+			fsd.uris.add(1, Uri.fromFile(file));
+		
+		filesToSend = (Uri[])fsd.uris.toArray(new Uri[fsd.uris.size()]);
+		//new Uri[] { intent.getData() };
+
+		try {
+
+			progressSBar = new ProgressDialog(DisplayPersonActivity.this);
+			progressSBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+			progressSBar.setTitle("Sending");
+
+			progressSBar.setOnCancelListener(new OnCancelListener() {
+				@Override
+				public void onCancel(DialogInterface dialog) {
+					mNFCService.stop();
+					Toast.makeText(getApplicationContext(),
+							"Connection Terminated", Toast.LENGTH_LONG).show();
+					finish();
+
+				}
+			});
+
+			for (int i = 0; i != filesToSend.length; i++) {
+
+				int num = filesToSend.length - i - 1;
+
+				mNFCService.writeToFile(readBytes(filesToSend[i], num),
+						new File(filesToSend[i].getPath()).getName(), num);
+			}
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
+	public void onDialogNegativeClick(DialogFragment dialog) {
+		// User touched the dialog's negative button
+		mNFCService.stop();
+		Toast.makeText(getApplicationContext(), "Connection Terminated",
+				Toast.LENGTH_LONG).show();
+		finish();
+
+	}
+
+	// //////////////////
 }

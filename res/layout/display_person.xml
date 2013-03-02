@@ -77,12 +77,12 @@
         android:layout_alignRight="@+id/TextView1"
         android:layout_alignTop="@+id/textView2"
         android:text="@string/edit_button"/>
-    <Button
+ <!--    <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignRight="@+id/TextView03"
         android:layout_below="@+id/image1"
-        android:text="@string/dialog_button" />
+        android:text="@string/dialog_button" /> -->
 
 </RelativeLayout>

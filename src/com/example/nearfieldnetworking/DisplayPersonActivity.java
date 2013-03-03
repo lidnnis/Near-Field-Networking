@@ -61,6 +61,11 @@ public class DisplayPersonActivity extends FragmentActivity implements
 	static final String PROFILE_PIC_FILE_NAME = ".profile_pic.jpg";
 	static final String PERSON_FILE_NAME = ".person";
 
+	public static final String MAIN_DIR = Environment
+			.getExternalStorageDirectory()
+			+ File.separator
+			+ "near_field_networking";
+
 	// /////NFC DENNIS///////
 	private NfcAdapter mNfcAdapter;
 	private BluetoothAdapter mBluetoothAdapter;
@@ -93,6 +98,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 	private String recievedFilepath;
 	private String recievedFilename;
+	private String recievedName;
 	private FileOutputStream fos = null;
 	private int totalSize;
 	private int numFilesLeft;
@@ -125,8 +131,6 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 			if (person_path == null) {
 				Log.d("debug", "there are no extras");
-				String MAIN_DIR = Environment.getExternalStorageDirectory()
-						+ File.separator + "near_field_networking";
 				String MY_PROFILE_PATH = MAIN_DIR + File.separator
 						+ "my_profile";
 				person_path = MY_PROFILE_PATH;
@@ -206,9 +210,9 @@ public class DisplayPersonActivity extends FragmentActivity implements
 			mNfcAdapter.setOnNdefPushCompleteCallback(this, this);
 		}
 
-		File directory = new File(Environment.getExternalStorageDirectory()
-				+ File.separator + "NFN");
-		directory.mkdirs();
+		// File directory = new File(Environment.getExternalStorageDirectory()
+		// + File.separator + "NFN");
+		// directory.mkdirs();
 
 		// /
 	}
@@ -584,7 +588,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 				// new String(headerBuf), Toast.LENGTH_SHORT)
 				// .show();
 
-				Log.d("pos", Integer.toString(pos));
+				//Log.d("pos", Integer.toString(pos));
 
 				// Log.d("string", new String(readBuf));
 
@@ -602,6 +606,11 @@ public class DisplayPersonActivity extends FragmentActivity implements
 					// get files left count
 					System.arraycopy(readBuf, 600, filesLeft, 0, 4);
 
+					// get name
+					byte[] name = new byte[100];
+					System.arraycopy(readBuf, 700, name, 0, 100);
+					recievedName = new String(name).trim();
+
 					ByteBuffer wrapped = ByteBuffer.wrap(totalBytes);
 					IntBuffer ib = wrapped.asIntBuffer();
 					totalSize = ib.get(0);
@@ -612,10 +621,39 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 					mNFCService.setSize(totalSize);
 
-					Log.d("totalBytes", Integer.toString(totalSize));
+					//Log.d("totalBytes", Integer.toString(totalSize));
 
-					File path = Environment.getExternalStorageDirectory();
-					File file = new File(path + "/NFN", recievedFilename);
+					String people_dir = MAIN_DIR + "/people/" + recievedName;
+
+					File directory = new File(people_dir);
+					directory.mkdirs();
+
+					Log.d("recievedName", people_dir);
+					Log.d("recievedFP", recievedFilepath);
+
+					File f = new File(recievedFilepath);
+
+					File file;
+					Log.d("parent",new File(f.getParent()).getName());
+					
+					if ((new File(f.getParent()).getName()).equals("Profile")) {
+						Log.d("profile","CREATE NEW PROFILE");
+						directory = new File(people_dir + "/Profile");
+						directory.mkdirs();
+						file = new File(people_dir + "/Profile",
+								recievedFilename);
+
+					} else if ((new File(f.getParent()).getName()).equals("Resume")) {
+						Log.d("resume","CREATE NEW RESUME");
+						directory = new File(people_dir + "/Resume");
+						directory.mkdirs();
+						file = new File(people_dir + "/Resume",
+								recievedFilename);
+
+					} else {
+						file = new File(people_dir, recievedFilename);
+
+					}
 
 					try {
 						fos = new FileOutputStream(file);
@@ -667,7 +705,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 					}
 				}
 
-				else if (pos > 909) {
+				else if (pos > 990) {
 
 					if (pos - totalSize > 0) {
 						buffer = new byte[pos - totalSize];
@@ -770,16 +808,19 @@ public class DisplayPersonActivity extends FragmentActivity implements
 					// sendNextFile = true;
 
 					if (numLeft == 0) {
+						
+						progressSBar.dismiss();
+						
 						try {
 							synchronized (this) {
-								wait(1000);
+								wait(5000);
 							}
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 
-						progressSBar.dismiss();
+						
 						mNFCService.stop();
 						finish();
 					}
@@ -832,6 +873,9 @@ public class DisplayPersonActivity extends FragmentActivity implements
 		ByteBuffer f = ByteBuffer.allocate(4);
 		f.putInt(filesLeft);
 
+		Log.d("name", person.getName());
+		byte[] name = person.getName().replace(' ', '_').getBytes();
+
 		// and then we can return your byte array.
 		byte[] temp = byteBuffer.toByteArray();
 
@@ -849,6 +893,12 @@ public class DisplayPersonActivity extends FragmentActivity implements
 		// Add files left to header
 		System.arraycopy(f.array(), 0, bb, 600, f.array().length);
 
+		// Add name to header
+		if (name.length < 100)
+			System.arraycopy(name, 0, bb, 700, name.length);
+		else
+			System.arraycopy(name, 0, bb, 700, 100);
+
 		return bb;
 	}
 
@@ -861,11 +911,9 @@ public class DisplayPersonActivity extends FragmentActivity implements
 		File file = new File(person_path + File.separator + ".profile_pic.jpg");
 		if (file.exists())
 			fsd.uris.add(Uri.fromFile(file));
-		
-		 fsd.uris.add(Uri.fromFile(new File(person_path + File.separator +
-		 ".person")));
 
-
+		fsd.uris.add(Uri.fromFile(new File(person_path + File.separator
+				+ ".person")));
 
 		filesToSend = (Uri[]) fsd.uris.toArray(new Uri[fsd.uris.size()]);
 		// new Uri[] { intent.getData() };

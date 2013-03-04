@@ -111,7 +111,7 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 				t.setOnLongClickListener(new OnLongClickListener() {
 					@Override
 					public boolean onLongClick(View v) {
-						Toast.makeText(context, "Long Click Detected", Toast.LENGTH_SHORT).show();
+						//Toast.makeText(context, "Long Click Detected", Toast.LENGTH_SHORT).show();
 						AlertDialog diaBox = AskOption((CharSequence) ((File) getChild(arg0,arg1)).getName(), ((File) getChild(arg0,arg1)).getPath());
 				        	diaBox.show();
 						return false;

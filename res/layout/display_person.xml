@@ -70,13 +70,13 @@
         android:layout_marginTop="20dp" >
     </ExpandableListView>
 
-    <Button
+    <!-- <Button
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignRight="@+id/TextView1"
         android:layout_alignTop="@+id/textView2"
-        android:text="@string/edit_button"/>
+        android:text="@string/edit_button"/> -->
  <!--    <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"

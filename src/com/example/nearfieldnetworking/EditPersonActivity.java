@@ -24,6 +24,7 @@ import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
@@ -85,6 +86,8 @@ public class EditPersonActivity extends Activity {
 			}
 		}
 		
+		//prevent edit text keyboard from popping up automatically
+		this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		
 		//set values layout
 		final EditText name_text = (EditText) findViewById(R.id.textView2);
@@ -227,7 +230,7 @@ public class EditPersonActivity extends Activity {
     }
     
     //load list
-    private void loadList(){
+    public void loadList(){
     	
     	//expandable list view
     	ExpandableListView list_view = (ExpandableListView) findViewById(R.id.expandableListView1);

@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.R;
 
 /**************************************************************************************
 * class FileExpandableClassAdapter
@@ -179,7 +180,7 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 	           //set message, title, and icon
 	           .setTitle("Delete") 
 	           .setMessage("Are you sure you want to delete " + name + "?") 
-	           //.setIcon(R.drawable.delete)
+	           .setIcon(R.drawable.ic_delete)
 	           .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 	               public void onClick(DialogInterface dialog, int whichButton) { 
 	            	   File file = new File(selectedFilePath);

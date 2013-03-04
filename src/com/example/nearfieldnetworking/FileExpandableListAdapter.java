@@ -117,6 +117,7 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 						return false;
 					}
 				});
+				
 			}
 			return t;
 		}
@@ -197,6 +198,9 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 	                   */
 	                 
 	            	   dialog.dismiss();
+	            	   ((Activity)context).finish();
+	            	   ((Activity)context).startActivity(((Activity)context).getIntent());
+	            	   //((Activity) context).onRestart();
 	               }   
 	               
 	           })
@@ -211,5 +215,9 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 	           return myQuittingDialogBox;
 
 	       }
+	    
+	    
+	    
+	    
 		
 }

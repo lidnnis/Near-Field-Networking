@@ -75,8 +75,6 @@ public class MainActivity extends Activity {
 	    Button people_button = (Button) findViewById(R.id.button2);
 	    people_button.setOnClickListener(new View.OnClickListener() {
 	    	public void onClick(View v) {
-	    		//notification
-			    sendBasicNotification("Near Field Networking","You clicked the people button.");
 	    		
 			    //launch intent
 	    		Intent intent = new Intent(getBaseContext(), DisplayPeopleActivity.class);
@@ -84,7 +82,6 @@ public class MainActivity extends Activity {
 	           	startActivity(intent);  
 	    	}
 	    });
-	    
 	    
 	}
 
@@ -113,7 +110,7 @@ public class MainActivity extends Activity {
 //		   startActivity(intent);
 //	}
 	
-	//send notification
+	//send  basic notification
 	public void sendBasicNotification(String title,String message) {
 		
 		NotificationCompat.Builder mBuilder =
@@ -132,6 +129,27 @@ public class MainActivity extends Activity {
 		// mId allows you to update the notification later on.
 		mNotificationManager.notify(13, mBuilder.build());
 	}
+	
+	//send notification
+	public void sendNotification(String title,String message, Intent intent) {
+			
+			NotificationCompat.Builder mBuilder =
+			        new NotificationCompat.Builder(this)
+			        .setSmallIcon(R.drawable.nfc_icon)
+			        .setContentTitle(title)
+			        .setContentText(message);
+		
+			// Creates an explicit intent for an Activity in your app
+			//Intent resultIntent = new Intent(this, MainActivity.class);
+			
+			mBuilder.setContentIntent(PendingIntent.getActivity(this,0,intent,0));
+			mBuilder.setAutoCancel(true);
+			NotificationManager mNotificationManager =
+			    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+			// mId allows you to update the notification later on.
+			mNotificationManager.notify(13, mBuilder.build());
+		}
+	
 	
 	//addNewPerson
 	//assuming given directory containing all of the person's files
@@ -176,6 +194,14 @@ public class MainActivity extends Activity {
 			Toast.makeText(getApplicationContext(), "Error adding person", Toast.LENGTH_SHORT).show();
 		}
 		
+		//start activity
+		Intent intent = new Intent(getBaseContext(), DisplayPersonActivity.class);
+       	intent.putExtra("person_directory",new_dir_path);
+       	intent.putExtra("editable", false);
+       	startActivity(intent);
+		
+		//add notification
+		sendNotification("Added " + person.getName(),"Click here to view",intent);
 		
 		
 	}

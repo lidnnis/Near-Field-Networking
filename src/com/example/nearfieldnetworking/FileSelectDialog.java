@@ -15,7 +15,7 @@ import android.support.v4.app.DialogFragment;
 import android.widget.ExpandableListView;
 
 public class FileSelectDialog extends DialogFragment {
-	public final ArrayList<Uri> uris = new ArrayList<Uri>();
+	public ArrayList<Uri> uris = new ArrayList<Uri>();
 	private String path;
 	
 	
@@ -85,14 +85,23 @@ public class FileSelectDialog extends DialogFragment {
 				}
 			}
 		}
+		ArrayList<ArrayList<Boolean>> checkBoxValues = new ArrayList<ArrayList<Boolean>>();
+		for(int i =0; i<categories.size();i++){
+			ArrayList<Boolean> defaultValues = new ArrayList<Boolean>();
+			for(int j = 0; j  < subcategories.get(i).size();j++){
+				defaultValues.add(true);
+			}
+			checkBoxValues.add(defaultValues);
+		}
+
 		
 		
 		final String[] check_list = fileNames.toArray(new String[fileNames.size()]);
 		
-		//CheckableFileExpandableList adapter = new CheckableFileExpandableList(getActivity(), categories,subcategories,false);
+		final CheckableFileExpandableList adapter = new CheckableFileExpandableList(getActivity(), categories,subcategories,checkBoxValues);
 
 		// Set this blank adapter to the list view
-	    //list_view.setAdapter(adapter);
+	    list_view.setAdapter(adapter);
 		
 		//final String[] dialog_options = subcategories.toArray(new String[subcategories.size()]);
         
@@ -101,7 +110,7 @@ public class FileSelectDialog extends DialogFragment {
 		
 		builder.setView(list_view);
         
-		builder.setMultiChoiceItems(check_list, null, new DialogInterface.OnMultiChoiceClickListener() 
+	/*	builder.setMultiChoiceItems(check_list, null, new DialogInterface.OnMultiChoiceClickListener() 
         		{
         			@Override
         			public void onClick(DialogInterface dialog, int which, boolean isChecked)
@@ -117,12 +126,13 @@ public class FileSelectDialog extends DialogFragment {
         				}
         			}
         		});
-        		
+        		*/
         		//Buttom buttons
         	
                builder.setPositiveButton(R.string.send, new DialogInterface.OnClickListener() {
                    public void onClick(DialogInterface dialog, int id) {
                        // Send Files
+                	   uris=adapter.returnFinalStates();
                 	   mListener.onDialogPositiveClick(FileSelectDialog.this);
                    }
                })

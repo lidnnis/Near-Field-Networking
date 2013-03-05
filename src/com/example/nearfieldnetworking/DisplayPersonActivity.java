@@ -838,7 +838,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 						
 						try {
 							synchronized (this) {
-								wait(5000);
+								wait(2000);
 							}
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block

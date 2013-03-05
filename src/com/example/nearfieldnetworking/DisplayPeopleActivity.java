@@ -6,16 +6,24 @@ import java.util.Arrays;
 import java.util.List;
 
 import android.app.ActionBar;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.ListActivity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -110,10 +118,51 @@ public class DisplayPeopleActivity extends ListActivity {
     	//ArrayAdapter<String> fileList = new ArrayAdapter<String>(this, R.layout.row, item); 
     	//setListAdapter(fileList);
     	setListAdapter(new FileArrayAdapter(this, item,path));
+    	
+    	ListView lv = getListView();
+    	lv.setOnItemLongClickListener( new AdapterView.OnItemLongClickListener
+    			(){
+    		@Override
+    		public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id){
+    			onLongListItemClick(v, pos,id);
+    			return false;
+    		}
+    		
+    	});
     }
 
+    protected void onLongListItemClick(View v, int pos, long id){
 
+    	AlertDialog diaBox = AskOption((path.get(pos)));
+    	diaBox.show();
+    	
+    }
 
+    public AlertDialog AskOption(final String path)
+    {
+       AlertDialog myQuittingDialogBox = new AlertDialog.Builder(this) 
+           //set message, title, and icon
+           .setTitle("Delete") 
+           .setMessage("Are you sure you want to delete?") 
+           //.setIcon(R.drawable.ic_delete)
+           .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+               public void onClick(DialogInterface dialog, int whichButton) { 
+            	   File dir = new File(path);
+            	   DeleteDir.deleteDirectory(dir);
+            	   dialog.dismiss();  
+            	   finish();
+       	       		startActivity(getIntent());
+               }      
+           })
+           .setNegativeButton("No", new DialogInterface.OnClickListener() {
+               public void onClick(DialogInterface dialog, int which) {
+                   dialog.dismiss();
+               }
+           })   
+           .create();
+           return myQuittingDialogBox;
+       }
+    
     //when clicked, respond appropriately
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
@@ -186,4 +235,27 @@ public class DisplayPeopleActivity extends ListActivity {
     }
     
     
+}
+
+
+//fxn to delete recursively
+class DeleteDir {
+	  public static void main(String args[]) {
+	    deleteDirectory(new File(args[0]));
+	  }
+
+	  static public boolean deleteDirectory(File path) {
+	    if( path.exists() ) {
+	      File[] files = path.listFiles();
+	      for(int i=0; i<files.length; i++) {
+	         if(files[i].isDirectory()) {
+	           deleteDirectory(files[i]);
+	         }
+	         else {
+	           files[i].delete();
+	         }
+	      }
+	    }
+	    return( path.delete() );
+   }
 }

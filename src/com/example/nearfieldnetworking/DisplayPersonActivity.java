@@ -15,9 +15,12 @@ import java.util.ArrayList;
 import com.example.nearfieldnetworking.FileSelectDialog.NoticeDialogListener;
 
 import android.app.ActionBar;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
@@ -38,6 +41,7 @@ import android.os.Parcelable;
 import android.provider.Settings;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -592,6 +596,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 				byte[] totalBytes = new byte[4];
 				byte[] filesLeft = new byte[4];
+				String people_dir ="";
 
 				// Log.d("totalBytes",Integer.toString(wrapped.getInt()));
 
@@ -634,7 +639,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 					//Log.d("totalBytes", Integer.toString(totalSize));
 
-					String people_dir = MAIN_DIR + "/people/" + recievedName;
+					people_dir = MAIN_DIR + "/people/" + recievedName;
 
 					File directory = new File(people_dir);
 					directory.mkdirs();
@@ -647,11 +652,11 @@ public class DisplayPersonActivity extends FragmentActivity implements
 					File file;
 					Log.d("parent",new File(f.getParent()).getName());
 					
-					if ((new File(f.getParent()).getName()).equals("Profile")) {
-						Log.d("profile","CREATE NEW PROFILE");
-						directory = new File(people_dir + "/Profile");
+					if ((new File(f.getParent()).getName()).equals("Portfolio")) {
+						Log.d("portfolio","CREATE NEW PORTFOLIO");
+						directory = new File(people_dir + "/Portfolio");
 						directory.mkdirs();
-						file = new File(people_dir + "/Profile",
+						file = new File(people_dir + "/Portfolio",
 								recievedFilename);
 
 					} else if ((new File(f.getParent()).getName()).equals("Resume")) {
@@ -778,6 +783,15 @@ public class DisplayPersonActivity extends FragmentActivity implements
 							progressBar.dismiss();
 						mNFCService.stop();
 						finish();
+						
+						//start activity
+						Intent intent = new Intent(getBaseContext(), DisplayPersonActivity.class);
+				       	intent.putExtra("person_directory",people_dir);
+				       	intent.putExtra("editable", false);
+				       	startActivity(intent);
+						
+						//add notification
+						sendNotification("Added " + recievedName,"Click here to view",intent);
 					}
 				}
 
@@ -968,6 +982,26 @@ public class DisplayPersonActivity extends FragmentActivity implements
 				Toast.LENGTH_LONG).show();
 		finish();
 
+	}
+	
+	
+	public  void sendNotification(String title,String message, Intent intent) {
+		
+		NotificationCompat.Builder mBuilder =
+		        new NotificationCompat.Builder(this)
+		        .setSmallIcon(R.drawable.nfc_icon)
+		        .setContentTitle(title)
+		        .setContentText(message);
+	
+		// Creates an explicit intent for an Activity in your app
+		//Intent resultIntent = new Intent(this, MainActivity.class);
+		
+		mBuilder.setContentIntent(PendingIntent.getActivity(this,0,intent,0));
+		mBuilder.setAutoCancel(true);
+		NotificationManager mNotificationManager =
+		    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		// mId allows you to update the notification later on.
+		mNotificationManager.notify(13, mBuilder.build());
 	}
 
 	// //////////////////

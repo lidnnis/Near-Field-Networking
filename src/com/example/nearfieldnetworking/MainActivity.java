@@ -130,8 +130,8 @@ public class MainActivity extends Activity {
 		mNotificationManager.notify(13, mBuilder.build());
 	}
 	
-	//send notification
-	public void sendNotification(String title,String message, Intent intent) {
+	/*//send notification
+	public  void sendNotification(String title,String message, Intent intent) {
 			
 			NotificationCompat.Builder mBuilder =
 			        new NotificationCompat.Builder(this)
@@ -205,5 +205,5 @@ public class MainActivity extends Activity {
 		
 		
 	}
-	
+	*/
 }

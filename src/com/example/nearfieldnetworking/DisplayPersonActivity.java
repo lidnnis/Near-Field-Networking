@@ -147,7 +147,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 		}
 
 		// if can edit, set on click listener
-		Button edit_button = (Button) findViewById(R.id.button1);
+		/*Button edit_button = (Button) findViewById(R.id.button1);
 		if (editable) {
 			edit_button.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
@@ -161,7 +161,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 		} else {
 			// else hide the button
 			edit_button.setVisibility(View.GONE);
-		}
+		}*/
 
 		// FAIZAN ADD
 		// Button dialog_button = (Button) findViewById(R.id.button2);
@@ -201,8 +201,9 @@ public class DisplayPersonActivity extends FragmentActivity implements
 		}
 
 		if (mNfcAdapter == null) {
-			mInfoText = (TextView) findViewById(R.id.textView);
-			mInfoText.setText("NFC is not available on this device.");
+			//mInfoText = (TextView) findViewById(R.id.textView);
+			//mInfoText.setText("NFC is not available on this device.");
+			Toast.makeText(this, "NFC is not available on this device.",Toast.LENGTH_SHORT).show();
 		} else {
 			// Register callback to set NDEF message
 			mNfcAdapter.setNdefPushMessageCallback(this, this);
@@ -489,7 +490,11 @@ public class DisplayPersonActivity extends FragmentActivity implements
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_nfc, menu);
+		if(editable){
+			getMenuInflater().inflate(R.menu.activity_nfc_editable, menu);
+		}else{
+			getMenuInflater().inflate(R.menu.activity_nfc, menu);
+		}
 		return true;
 	}
 
@@ -514,6 +519,12 @@ public class DisplayPersonActivity extends FragmentActivity implements
 			intent = new Intent(this, MainActivity.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
+			return true;
+		case R.id.edit_profile:
+			Intent intent1 = new Intent(getBaseContext(),
+					EditPersonActivity.class);
+			intent1.putExtra("person_directory", person_path);
+			startActivityForResult(intent1, 0);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);

@@ -1,0 +1,29 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:icon="@drawable/ic_menu_preferences"
+        android:showAsAction="ifRoom"
+        android:title="@string/phone_settings">
+        <menu>
+            <item
+                android:id="@+id/phone_nfc_settings"
+                android:title="@string/phone_nfc_settings"/>
+            <item
+                android:id="@+id/phone_bt_settings"
+                android:title="@string/phone_bt_settings"/>
+            <item
+                android:id="@+id/edit_profile"
+                android:title="@string/edit_profile"/>
+        </menu>
+    </item>
+<!--     <item
+        android:id="@+id/menu_nfc_settings"
+        android:showAsAction="never"
+        android:title="@string/menu_nfc_settings"/>
+    <item
+        android:id="@+id/menu_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/menu_settings"/> -->
+
+</menu>

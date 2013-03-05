@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.R;
 
 /**************************************************************************************
 * class FileExpandableClassAdapter
@@ -110,12 +111,13 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 				t.setOnLongClickListener(new OnLongClickListener() {
 					@Override
 					public boolean onLongClick(View v) {
-						Toast.makeText(context, "Long Click Detected", Toast.LENGTH_SHORT).show();
+						//Toast.makeText(context, "Long Click Detected", Toast.LENGTH_SHORT).show();
 						AlertDialog diaBox = AskOption((CharSequence) ((File) getChild(arg0,arg1)).getName(), ((File) getChild(arg0,arg1)).getPath());
 				        	diaBox.show();
 						return false;
 					}
 				});
+				
 			}
 			return t;
 		}
@@ -179,7 +181,7 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 	           //set message, title, and icon
 	           .setTitle("Delete") 
 	           .setMessage("Are you sure you want to delete " + name + "?") 
-	           //.setIcon(R.drawable.delete)
+	           .setIcon(R.drawable.ic_delete)
 	           .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 	               public void onClick(DialogInterface dialog, int whichButton) { 
 	            	   File file = new File(selectedFilePath);
@@ -196,6 +198,9 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 	                   */
 	                 
 	            	   dialog.dismiss();
+	            	   ((Activity)context).finish();
+	            	   ((Activity)context).startActivity(((Activity)context).getIntent());
+	            	   //((Activity) context).onRestart();
 	               }   
 	               
 	           })
@@ -210,5 +215,9 @@ public class FileExpandableListAdapter extends BaseExpandableListAdapter{
 	           return myQuittingDialogBox;
 
 	       }
+	    
+	    
+	    
+	    
 		
 }

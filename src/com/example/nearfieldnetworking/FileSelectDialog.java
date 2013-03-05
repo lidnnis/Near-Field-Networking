@@ -107,7 +107,12 @@ public class FileSelectDialog extends DialogFragment {
         
 		//Toast.makeText(getActivity(), dialog_options, Toast.LENGTH_SHORT).show();
 		//Tracks selected items
-		
+	    
+	    list_view.setAdapter(adapter);
+	     for(int i = 0; i < adapter.getGroupCount();i++){
+	    	 list_view.expandGroup(i);
+	      }
+	     
 		builder.setView(list_view);
         
 	/*	builder.setMultiChoiceItems(check_list, null, new DialogInterface.OnMultiChoiceClickListener() 

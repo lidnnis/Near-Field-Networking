@@ -8,9 +8,9 @@
             <item
                 android:id="@+id/phone_nfc_settings"
                 android:title="@string/phone_nfc_settings"/>
-            <item
+        <!--     <item
                 android:id="@+id/phone_bt_settings"
-                android:title="@string/phone_bt_settings"/>
+                android:title="@string/phone_bt_settings"/> -->
         </menu>
     </item>
 <!--     <item

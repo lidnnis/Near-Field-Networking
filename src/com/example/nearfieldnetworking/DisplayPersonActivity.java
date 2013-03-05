@@ -510,10 +510,10 @@ public class DisplayPersonActivity extends FragmentActivity implements
 			Intent intent = new Intent(Settings.ACTION_NFCSHARING_SETTINGS);
 			startActivity(intent);
 			return true;
-		case R.id.phone_bt_settings:
-			intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-			startActivityForResult(intent, REQUEST_ENABLE_BT);
-			return true;
+//		case R.id.phone_bt_settings:
+//			intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//			startActivityForResult(intent, REQUEST_ENABLE_BT);
+//			return true;
 		case android.R.id.home:
 			// app icon in action bar clicked; go home
 			intent = new Intent(this, MainActivity.class);
@@ -830,7 +830,6 @@ public class DisplayPersonActivity extends FragmentActivity implements
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-
 						
 						mNFCService.stop();
 						finish();

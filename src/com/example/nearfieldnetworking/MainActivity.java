@@ -54,7 +54,7 @@ public class MainActivity extends Activity {
 	    }
 	    
 	    //create my profile's person object if does not exist
-	    Person user = new Person("Your Name");
+	    Person user = new Person("");
     	File person_file = new File(MY_PROFILE_PATH + "/.person");
 	    if(!person_file.exists()){
 			user.writeToFile(person_file);

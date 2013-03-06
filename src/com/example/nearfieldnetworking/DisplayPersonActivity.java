@@ -115,6 +115,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 	private boolean editable;
 	private Person person = new Person("");
 	private DialogFragment newFragment;
+	private String people_dir;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -610,7 +611,6 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 				byte[] totalBytes = new byte[4];
 				byte[] filesLeft = new byte[4];
-				String people_dir ="";
 
 				// Log.d("totalBytes",Integer.toString(wrapped.getInt()));
 
@@ -801,15 +801,15 @@ public class DisplayPersonActivity extends FragmentActivity implements
 						//start activity
 						
 						
-//						Log.d("!!!!!!!!!","dskljflkdsjflkd    " + people_dir);
+						Log.d("!!!!!!!!!","dskljflkdsjflkd    " + people_dir);
 //						
-//						Intent intent = new Intent(getBaseContext(), DisplayPersonActivity.class);
-//				       	intent.putExtra("person_directory",people_dir);
-//				       	intent.putExtra("editable", false);
-//				       	startActivity(intent);
+						Intent intent = new Intent(getBaseContext(), DisplayPersonActivity.class);
+				       	intent.putExtra("person_directory",people_dir);
+				       	intent.putExtra("editable", false);
+				       	startActivity(intent);
 //						
 //						//add notification
-//						sendNotification("Added " + recievedName,"Click here to view",intent);
+						sendNotification("Added " + recievedName,"Click here to view",intent);
 					}
 				}
 

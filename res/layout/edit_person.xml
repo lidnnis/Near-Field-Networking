@@ -11,9 +11,10 @@
         android:layout_alignLeft="@+id/imageButton1"
         android:layout_alignParentTop="true"
         android:layout_marginTop="24dp"
-        android:textStyle="bold"
+        android:hint="Your Name"
         android:text="Name"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <EditText
         android:id="@+id/TextView03"
@@ -22,7 +23,6 @@
         android:layout_alignLeft="@+id/TextView1"
         android:layout_below="@+id/textView1"
         android:ems="10"
-        android:hint="Your Name"
         android:inputType="phone"
         android:text="TextView" />
 
@@ -41,8 +41,8 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/TextView02"
         android:layout_below="@+id/TextView1"
-        android:textStyle="bold"
-        android:text="Phone Number" />
+        android:text="Phone Number"
+        android:textStyle="bold" />
 
     <EditText
         android:id="@+id/TextView1"
@@ -64,8 +64,8 @@
         android:layout_marginLeft="15dp"
         android:layout_marginTop="14dp"
         android:layout_toRightOf="@+id/imageButton1"
-        android:textStyle="bold"
-        android:text="Email Address" />
+        android:text="Email Address"
+        android:textStyle="bold" />
 
     <ExpandableListView
         android:id="@+id/expandableListView1"
@@ -82,6 +82,6 @@
         android:layout_height="wrap_content"
         android:layout_alignRight="@+id/TextView1"
         android:layout_alignTop="@+id/textView2"
-        android:text="@string/save_button"/>
+        android:text="@string/save_button" />
 
 </RelativeLayout>

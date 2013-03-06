@@ -12,8 +12,6 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
-import com.example.nearfieldnetworking.FileSelectDialog.NoticeDialogListener;
-
 import android.app.ActionBar;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -22,17 +20,17 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.nfc.NfcEvent;
 import android.nfc.NfcAdapter.CreateNdefMessageCallback;
 import android.nfc.NfcAdapter.OnNdefPushCompleteCallback;
+import android.nfc.NfcEvent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -45,12 +43,12 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.nearfieldnetworking.FileSelectDialog.NoticeDialogListener;
 
 /********************************************************
  * DisplayPersonActivity This Activity is responsible for displaying a person It
@@ -125,6 +123,8 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 		ActionBar actionBar = getActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
+		
+		Log.d("test","!!!!!!!!!!!!!!!!!!!!!!!!");
 
 		// fetch data from intent
 		Bundle extras = getIntent().getExtras();
@@ -140,6 +140,16 @@ public class DisplayPersonActivity extends FragmentActivity implements
 				person_path = MY_PROFILE_PATH;
 				editable = true;
 			}
+		}
+		
+		Log.d("pp", "!!!!!" + person_path);
+		
+		if (person_path == null) {
+			Log.d("debug", "there are no extras");
+			String MY_PROFILE_PATH = MAIN_DIR + File.separator
+					+ "my_profile";
+			person_path = MY_PROFILE_PATH;
+			editable = true;
 		}
 
 		// make sure person_directory exists
@@ -305,7 +315,11 @@ public class DisplayPersonActivity extends FragmentActivity implements
 
 		// set values layout
 		TextView name_text = (TextView) findViewById(R.id.textView2);
-		name_text.setText(person.getName());
+		
+		//if (!name_text.equals(""))
+			name_text.setText(person.getName());
+//		else
+//			name_text.setHint("Your Name");
 
 		TextView email_text = (TextView) findViewById(R.id.TextView1);
 		email_text.setText(person.getEmailAddress());
@@ -625,7 +639,7 @@ public class DisplayPersonActivity extends FragmentActivity implements
 					// get name
 					byte[] name = new byte[100];
 					System.arraycopy(readBuf, 700, name, 0, 100);
-					recievedName = new String(name).trim();
+					recievedName = new String(name).trim().replace('_', ' ');
 
 					ByteBuffer wrapped = ByteBuffer.wrap(totalBytes);
 					IntBuffer ib = wrapped.asIntBuffer();
@@ -785,13 +799,17 @@ public class DisplayPersonActivity extends FragmentActivity implements
 						finish();
 						
 						//start activity
-						Intent intent = new Intent(getBaseContext(), DisplayPersonActivity.class);
-				       	intent.putExtra("person_directory",people_dir);
-				       	intent.putExtra("editable", false);
-				       	startActivity(intent);
 						
-						//add notification
-						sendNotification("Added " + recievedName,"Click here to view",intent);
+						
+//						Log.d("!!!!!!!!!","dskljflkdsjflkd    " + people_dir);
+//						
+//						Intent intent = new Intent(getBaseContext(), DisplayPersonActivity.class);
+//				       	intent.putExtra("person_directory",people_dir);
+//				       	intent.putExtra("editable", false);
+//				       	startActivity(intent);
+//						
+//						//add notification
+//						sendNotification("Added " + recievedName,"Click here to view",intent);
 					}
 				}
 

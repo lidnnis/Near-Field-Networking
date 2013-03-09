@@ -6,10 +6,9 @@
 
     <Button
         android:id="@+id/button2"
-        android:layout_width="100dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/button1"
-        android:layout_alignRight="@+id/button1"
+        android:layout_centerHorizontal="true"
         android:layout_below="@+id/button1"
         android:layout_marginTop="40dp"
         android:text="@string/others_button" />
@@ -23,4 +22,13 @@
         android:layout_marginTop="159dp"
         android:text="@string/my_profile_button" />
 
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/nfc_icon" />
+        
 </RelativeLayout>
